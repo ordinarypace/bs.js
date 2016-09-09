@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>bs.render</title>
+<script src="http://js.bsapi.co/3/build/build.js"></script>
+</head>
+
+<body>
+<h3>bs.render(bs.getId('form'))</h3>
+<div id="form">
+    <div data-group="form">
+        <div>
+			<label data-s="html,{^@form.0.label^}"></label>
+	        <input type="type" />
+		</div>
+		
+		<div>
+			<label data-s="html,{^@form.1.label^}"></label>
+	        <input type="type" />
+        </div>
+    </div>
+</div>
+<hr>
+
+<h3>bs.render(bs.getId('list'), 'listItem')</h3>
+<table border="1">
+<tr><th>이름</th><th>이메일</th><th>전화번호</th></tr>
+<tbody id="list">
+	<tr data-template="listItem">
+		<td data-s="html,{^$username^}"></td>
+		<td data-s="html,{^$email^}"></td>
+		<td data-s="html,{^$tel^}"></td>
+	</tr>
+</tbody>
+</table>
+<hr>
+
+<h3>bs.render(bs.getId('list2'), 'listItem', 'listItem2')</h3>
+<table border="1">
+<tr><th>이름</th><th>이메일</th><th>전화번호</th></tr>
+<tbody id="list2">
+</tbody>
+</table>
+
+</body>
+<script>
+(function(){
+	
+	bs('@form', [{label:'이름'}, {label:'이메일'}]);
+	bs.render(bs.getId('form'));
+
+	bs('listItem', [
+		{username:'둘리', email:'dooly@naver.com', tel:'010-2222-2222'}, 
+		{username:'도우너', email:'douner@naver.com', tel:'010-2398-3844'},
+		{username:'고길동', email:'gildonggo@naver.com', tel:'010-3003-2393'},
+		{username:'마이콜', email:'mycall@gmail.com', tel:'010-4893-0948'}
+	]);
+	bs.render(bs.getId('list'), 'listItem');
+	
+	
+	bs('listItem2', [
+		{username:'조석', email:'jsinvade@naver.com', tel:'010-7800-7800'}, 
+		{username:'애봉이', email:'aebong@naver.com', tel:'010-3070-2394'},
+		{username:'조철왕', email:'iorn@naver.com', tel:'010-3455-6756'},
+		{username:'조준', email:'aimjojo@gmail.com', tel:'010-9848-6756'}
+	]);
+	bs.render(bs.getId('list2'), 'listItem', 'listItem2');
+})();
+</script>
+</html>

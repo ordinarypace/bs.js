@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>Dest</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.doc('Dest(dest:String, target:*)', function(){/*
+ES6의 해체(destructuring)의 구현체
+
+### 인자
+
+1. dest:String - 해체식 문자열
+2. target:* - 해체 대상인 객체
+
+### 반환값
+Object - 각 해체의 결과가 들어있는 새 객체
+
+### 예제
+<pre>
+var result = Dest('[a,b]', [1,2]);
+console.log(result.a); //1
+console.log(result.b); //2
+</pre>
+*/});
+bsTest.run('Dest', null,
+function(flow){
+	flow.ok('배열해체');
+	var r = Dest('[a,b]', [1,2]);
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('배열펼치기해체');
+	var r = Dest('[a,...b]', [1,2,3,4]);
+	return r.a + r.b.join(',');
+}, '12,3,4',
+function(flow){
+	flow.ok('배열 전체 기본값');
+	var r = Dest('[a,b] = [1,2]', undefined);
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('배열 부분 기본값');
+	var r = Dest('[a,b=2]', [1]);
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('객체 해체');
+	var r = Dest('{a:a,b:b}', {a:1,b:2});
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('객체 단축키 해체');
+	var r = Dest('{a,b}', {a:1,b:2});
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('객체 전체 기본값');
+	var r = Dest('{a:a,b:b} = {"a":1,"b":2}', undefined);
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('객체 부분 기본값');
+	var r = Dest('{a:a,b:b=2}', {a:1});
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('복합 해체');
+	var r = Dest('{a:[a],b:[,b]}', {a:[1],b:[3,2]});
+	return r.a + r.b;
+}, 3,
+function(flow){
+	flow.ok('이터레이터 해체1');
+	var g = Gene(function(){
+		Yield(1, 1);
+		Yield(2, 1);
+		Yield(3, 1);
+	});
+	var t = g();
+	var r = Dest('[a,b,c]', g());
+	return r.a + r.b + r.c;
+}, 6,
+function(flow){
+	flow.ok('이터레이터 해체2');
+	var g = Gene(function(){
+		Yield(1, 1);
+		Yield(2, 1);
+		Yield(3, 1);
+	});
+	var r = Dest('[a,...b]', g());
+	return r.b.join(':');
+}, '2:3',
+function(flow){
+	flow.ok('이터레이터 해체3');
+	var r = Dest('[a,...b]', 'abcef');
+	return r.b.join(':');
+}, 'b:c:e:f'
+);
+
+</script>
+</body>
+</html>

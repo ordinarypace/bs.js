@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>view</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+
+<div data-vm="m.m6" data-view="tmpl9">
+	<div data-tmpl="tmpl9" data-vm=".{children}" data-view="tmpl10" data-s="background,#aaf">
+		<div data-tmpl="tmpl10" data-s="html,.{title}" data-click="m.tmpl10Click"></div>
+	</div>
+</div>
+<!--
+<div data-vm="m.m7" data-view="tmpl11">
+	<div data-tmpl="tmpl11">
+		<div data-s="html,.{title}"></div>
+		<div data-vm=".{children}" data-view="tmpl11"></div>
+	</div>
+</div>
+<!--
+<button data-click="click">edit</button>
+<div data-vm="m.m8" data-view="*">
+	<div data-tmpl="t10" data-s="html,.{title}" style="background:#aff"></div>
+	<div data-tmpl="t20" data-s="html,.{title}" style="background:#afa"></div>
+</div>
+<style>
+.test{background:#afa}
+</style>
+<div data-vm="m.m9" data-view="tmpl12">
+	<div data-tmpl="tmpl12" data-role="header" data-click="m.m9click">m9clcik</div>
+	<div data-tmpl="tmpl12" data-s="html,.{a},background,null" data-click="m.m9c" class="test"></div>
+</div>
+-->
+
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+var a, b= 0;
+bs('vm', {v0:function(m){return m;}}, 'm', {
+	m6:[
+		{children:[{title:'title00'},{title:'title01'}]},
+		{children:[{title:'title10'},{title:'title11'}]},
+		{children:[{title:'title20'},{title:'title21'}]}
+	],
+	m7:[
+		{title:'title0', children:[{title:'title0_0', children:[{title:'title0_0_0', children:[]}]},{title:'title0_1', children:[]}]},
+		{title:'title1', children:[]},
+		{title:'title2', children:[]}
+	],
+	m8:[
+		{'@tmpl':'t10', title:'t00_title'},
+		{'@tmpl':'t20', title:'t10_title'},
+		{'@tmpl':'t10', title:'t20_title'},
+		{'@tmpl':'t20', title:'t30_title'}
+	],
+	m9:[
+		{a:'a1'},{a:'a2'},{a:'a3'},{a:'a4'}
+	],
+	tmpl10Click:function(e){
+		bs('m.m6.'+e.group.parent().cursor()+'.children', [{title:'a0'},{title:'a1'}]);
+		bs.render();
+	},
+	m9c:function(e){
+		bs('m.m9.'+e.cursor()+'.b', '#faa');
+		e.target.S('background', '#faa');
+	},
+	m9click:function(e){
+		console.log('m9click');
+		bs('m.m9.0.a', 'a1-1');
+		bs.render(null, true);
+	}
+},
+'click', function(e){
+	var m6 = bs('m.m6');
+	m6[0].children[1].title = 'title01edit';
+	m6.splice(1,1);
+	m6.push(
+		{children:[{title:'title30'},{title:'title31'}]}
+	);
+	
+	var m8 = bs('m.m8');
+	if(m8.length) m8.length = 0;
+	else{
+		m8.push(
+			{'@tmpl':'t20', title:'t10_title'},
+			{'@tmpl':'t10', title:'t20_title'}
+		);
+	}
+	bs.render();
+}
+);
+bs('m.m9Clone', bs('m.m9').slice(0));
+bs.render();
+bs.on('click');
+</script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>bs4-bs</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+</head>
+<body>
+<div id="stage"></div>
+<div id="result"></div>
+<div id="test"></div>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.doc('bs.local(key:String[, value:*...])', function(){/*
+### 개요
+localstorage를 보다 편리하게 사용하도록 함.
+
+* IE계열에서는 value가 너무 큰 경우 저장되지 않는 버그가 있는데 이럴 경우 내부적으로 자동으로 분리하여 저장함.
+
+### 인자
+1. key:String - get, set을 위한 키이름
+2. value:* - 기본값은 그대로 저장되고 그 외엔 JSON.stringify가 자동으로 처리되며, null을 보내면 삭제됨
+
+
+### 반환값
+해당 key의 값
+
+### 예제
+<pre>
+bs.local('a', 1, 'b', {k:3});
+console.log(bs.local('b')); //오브젝트 {k:3}
+
+bs.local('a', null);
+console.log(bs.local('a')); //undefined
+</pre>
+*/});
+bsTest.doc('bs.localSize([unit:String])', function(){/*
+### 개요
+localstorage의 사용량을 조사함.
+
+### 인자
+1. unit:String - 'kb', 'mb' 가 올 수 있으며 보내지 않으면 byte가 반환됨.
+
+### 반환값
+현재 사용중인 localstorage의 크기
+
+### 예제
+<pre>
+console.log(bs.localSize('kb'));
+</pre>
+*/});
+bsTest.doc('bs.white([target:object|array[, validation:object|array]])', function(){/*
+### 개요
+특정 변수 그룹에 대해 기본 밸리데이션을 수행하여 화이트리스트를 만들어냄.
+
+* 기본정책에 의해 문자열은 자동으로 trim된 값으로 대체되고
+* 0, false, '', undefined, null 은 통과안됨
+* 위의 값을 통과시키고 싶은 경우에는 반드시 밸리데이션 함수를 지정해야함
+
+### 인자
+1. 없음 - 인자가 없으면 직전 검사한 화이트리스트오브젝트를 가져옴
+1. target:object|array - 검증하려는 오브젝트 또는 배열
+2. ?validation:object|array - 별도로 제공하려는 검사함수(target이 배열이면 배열, 오브젝트면 오브젝트)
+
+### 반환값
+화이트리스트 또는 0
+
+### 예제
+<pre>
+//일반적인 사용
+function(a,b,c){
+	var w;
+	if(bs.white([].slice.call(arguments)) == bs.FAIL) return;
+	//or
+	if(bs.white({a:a, b:b, c:c}) == bs.FAIL) return;
+	//es6
+	if(bs.white({a, b, c}) == bs.FAIL) return;
+	//
+	w = bs.white();
+	return w.a + w.b + w.c;
+}
+//단일키 검증
+if(bs.white({a:' a '})) console.log(bs.white().a); //'a'
+
+//배열검증
+if(bs.white([1, 'a'])) console.log(bs.white()[0], bs.white()[1]);
+
+//밸리데이션함수 이용
+if(bs.white(['    '], [function(v){return v.length;}]) console.log('ok');
+</pre>
+*/});
+bsTest.run('bs.local', function(){
+	var a = {a:1, b:2, c:[1,2,3,4], d:{a:'kkk'}};
+	bs.local('k', a);
+},
+function(){return bs.local('k').a;}, 1,
+function(){return bs.local('k').b;}, 2,
+function(){return bs.local('k').c.join(',');}, '1,2,3,4',
+function(f){
+	bs.get(function(v){
+		bs.local('b', JSON.parse(v));
+		f.run();	
+	}, 'weddingmain.json');
+	
+	f.hold();
+	return bs.local('k').d.a;
+}, 'kkk',
+function(){return bs.local('b').requestUrl;}, "\/api\/?main&bsNC=14543087723062",
+function(){return bs.local('b').request.token;}, "b216c87b45d191a9e2ed030e20d090ed",
+function(){return bs.local('b').data.wedding[1].userupfile1;}, "https:\/\/graph.facebook.com\/1205829966111070\/picture",
+function(){return bs.local('b').runtime;}, 21.004150390625,
+function(){return bs.local('b').sql[2].query;}, "select count(*)from member where member_rowid=7 and accesstoken='b216c87b45d191a9e2ed030e20d090ed'",
+function(){return bs.local('b').sql[0].info.item.table.isNull;}, false
+);
+bsTest.run('bs.white', null,
+function(flow){
+	flow.ok('단일키');
+	return bs.white({a:' a '}).a;
+}, 'a',
+function(flow){
+	flow.ok('복합키 오류');
+	return bs.white({a:' a ', b:0});
+}, bs.FAIL,
+function(flow){
+	flow.ok('배열');
+	return bs.white([1,2,3])[1]
+}, 2,
+function(flow){
+	flow.ok('배열+밸리데이션');
+	return bs.white([1,0,3], [0, function(v){return v == 0;}])[1];
+}, 0,
+function(flow){
+	flow.ok('오브젝트+밸리데이션');
+	return bs.white({a:1,b:0,c:3}, {b:function(v){return v == 0;}}).b;
+}, 0
+);
+
+</script>
+</body>
+</html>

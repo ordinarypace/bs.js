@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>Symb</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.run('Symb', null,
+function(flow){
+	flow.ok('Symb() 기본사용');
+	var s0 = Symb(), s1 = Symb();
+	var test = {
+		[s0]:3, [s1]:2
+	};
+	console.log(test);
+	return test[s0] + test[s1];
+}, 5,
+function(flow){
+	flow.ok('Symb.for 동가비교');
+	var s0 = Symb.for('test1');
+	var s1 = Symb.for('test1');
+	return s0 === s1
+}, true,
+function(flow){
+	flow.ok('Symb.keyFor 동가비교');
+	var s0 = Symb.for('test1');
+	return Symb.keyFor(s0);
+}, 'test1',
+function(flow){
+	flow.ok('Symb.iterator 사용');
+	var sum = 0, test = {
+		[Symb.iterator]:function(){
+			return [1,2,3];
+		}
+	};
+	For.Of(test, function(v){
+		sum += v;
+	})
+	return sum;
+}, 6
+);
+bsTest.doc('Symb.for(key:String)', function(){/*
+key로 식별되는 유일한 심볼객체를 만들어 반환함.
+
+### 인자
+
+1. key:String - 식별자로 사용할 키이름
+
+### 반환값
+Symb
+
+### 예제
+<pre>
+var s0 = Symb.for('test1');
+var s1 = Symb.for('test1');
+
+//s0 === s1
+</pre>
+*/});
+bsTest.doc('Symb.keyFor(symbol:Symb)', function(){/*
+해당 심볼의 키를 얻음.
+
+### 인자
+
+1. symbol:Symb - 키에 매핑된 심볼
+
+### 반환값
+String키이름 또는 undefined
+
+### 예제
+<pre>
+var s0 = Symb.for('test1');
+var key = Symb.keyFor(s0);
+
+//key === 'test1'
+</pre>
+*/});
+bsTest.doc('Symb.keyFor(symbol:Symb)', function(){/*
+해당 심볼의 키를 얻음.
+
+### 인자
+
+1. symbol:Symb - 키에 매핑된 심볼
+
+### 반환값
+String키이름 또는 undefined
+
+### 예제
+<pre>
+var s0 = Symb.for('test1');
+var key = Symb.for(s0);
+
+//key === 'test1'
+</pre>
+*/});
+bsTest.doc('Symb.iterator', function(){/*
+이터러블(iterable)을 구현하려면 반드시 이 키를 이용하여 메소드를 정의해야 함.
+
+<pre>
+var test = {
+	[Symb.iterator]:function(){
+		return [1,2,3];
+	}
+};
+For.Of(test, function(v){
+	console.log(v); //1,2,3
+})
+</pre>
+
+### 참고
+* <a href="Iter.html">Iter - 이터레이터 구현 클래스</a>
+* <a href="ForOf.html">ForOf - for of문 구현 클래스</a>
+*/});
+</script>
+</body>
+</html>

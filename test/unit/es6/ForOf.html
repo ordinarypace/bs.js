@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>ForOf</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.run('ForOf', null,
+function(flow){
+	flow.ok('기본사용');
+	var r = 0;
+	For.Of([1,2,3], function(v){
+		r += v;
+	});
+	return r;
+}, 6,
+function(flow){
+	flow.ok('해체와 함께 사용');
+	var r = [];
+	For('{a, b}').Of([{a:'a', b:'b'}, {a:'c', b:'d'}, {a:'e', b:'f'}], function(dest){
+		r.push(dest.a + ':' + dest.b);
+	});
+	return r.join(',');
+}, 'a:b,c:d,e:f',
+function(flow){
+	flow.ok('다중 for of');
+	var r = [];
+	For('{a, b}').Of([{a:'a', b:'b'}, {a:'c', b:'d'}, {a:'e', b:'f'}], function(dest){
+		r.push(dest.a + ':' + dest.b);
+		For('[a,b]').Of([[1,2],[3,4]],function(dest){
+			r.push(dest.a+ '-'+dest.b);
+		});
+	});
+	return r.join(',');
+}, 'a:b,1-2,3-4,c:d,1-2,3-4,e:f,1-2,3-4'
+
+);
+bsTest.doc('ForOf', function(){/*
+ES6의 for of 구문을 대체함
+
+### 기본사용
+
+For.Of(iterable|iterator, body:function(v));
+
+1. iterable - 루프를 돌 이터러블 또는 이터레이터 객체
+2. body:function(v) - 각 엘리먼드가 전달될 몸체 함수
+
+<pre>
+For.Of([1,2,3], function(v){
+	console.log(v); //차례로 1, 2, 3 출력
+});
+</pre>
+
+### 해체와 함께 사용
+
+For(destructuring:String).Of(iterable|iterator, body:function(dest));
+
+1. destructuring:String - 해체할 문자열
+2. iterable - 루프를 돌 이터러블 또는 이터레이터 객체
+3. body:function(dest) - 각 해체결과가 전달될 몸체 함수 
+
+<pre>
+For('{a, b}').Of([{a:1, b:2}, {a:2, b:3}, {a:3, b:4}], function(dest){
+	console.log(dest.a, dest.b); //차례로 1,2|2,3|3,4 쌍을 출력
+});
+</pre>
+
+### 참고
+* <a href="Iter.html">Iter - 이터레이터 구현 클래스</a>
+* <a href="Dest.html">Dest - 해체(destructuring) 구현 함수</a>
+*/});
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>template</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.run('Tmpl', null,
+function(flow){
+	flow.ok('문자열처리');
+	return Tmpl(null, '${a}=${b}', {a:3, b:5});
+}, '3=5',
+function(flow){
+	flow.ok('여러줄함수처리');
+	return Tmpl(null, function(){/*
+${a}=${b}
+${a+b}
+*/}, {a:3, b:5});
+}, '3=5\n8'
+);
+bsTest.doc('Tmpl(tag = null, str, vo = {})', function(){/*
+es6의 template기능을 대체함. es6용 tag함수를 그대로 사용할 수 있음
+
+### 인자
+
+1. tag:function - 문자열을 처리할 태그함수로 null인 경우 기본 태그함수가 작동함.
+2. str:string | function - 템플릿문자열로 직접 string을 보내거나 블럭주석을 이용한 함수로 보낼 수 있음.
+3. vo:object - 템플릿에 사용된 변수의 이름에 매칭될 오브젝트.
+
+### 반환값
+템플릿처리가 끝난 문자열
+
+### 예제
+<pre>
+var str = tmpl(null, '${a}=${b}', {a:3, b:5}); //'3=5'
+</pre>
+*/});
+</script>
+</body>
+</html>

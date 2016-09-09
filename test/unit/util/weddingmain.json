@@ -1,0 +1,254 @@
+{
+    "requestUrl": "\/api\/?main&bsNC=14543087723062",
+    "request": {
+        "main": "",
+        "bsNC": "14543087723062",
+        "token": "b216c87b45d191a9e2ed030e20d090ed"
+    },
+    "data": {
+        "wedding": [
+            {
+                "r": "4",
+                "regdate": "2016-03-02 04:00:00",
+                "mr1": "7",
+                "mr2": null,
+                "userupfile1": "https:\/\/graph.facebook.com\/1205829966111070\/picture?type=large",
+                "username1": "Eo Jin Yi Kim",
+                "userupfile2": null,
+                "username2": null,
+                "noticnt": "0",
+                "ismale": "1"
+            },
+            {
+                "r": "20",
+                "regdate": "2016-01-29 07:38:20",
+                "mr1": "7",
+                "mr2": "17",
+                "userupfile1": "https:\/\/graph.facebook.com\/1205829966111070\/picture",
+                "username1": "Eo Jin Yi Kim",
+                "userupfile2": "upload\/20160128\/ffd09a3f4285635d3e0d9a0bbf947f7d.jpg",
+                "username2": "정은혜",
+                "noticnt": "0",
+                "ismale": "1"
+            }
+        ],
+        "invitation": [
+            {
+                "r": "1",
+                "regdate": "2016-02-24 16:00:00",
+                "male_rowid": "1",
+                "female_rowid": "2",
+                "userupfile1": "upload\/20160125\/1bc846cb26929bbcc1bf4f9ce2f7c440.jpg",
+                "username1": "긴이름테스트",
+                "userupfile2": "upload\/20160101\/photo.jpg",
+                "username2": "나신부",
+                "noticnt": "0"
+            },
+            {
+                "r": "11",
+                "regdate": "0000-00-00 00:00:00",
+                "male_rowid": "8",
+                "female_rowid": "17",
+                "userupfile1": "https:\/\/graph.facebook.com\/10153494513258315\/picture?type=large",
+                "username1": "Yongho Isaac G",
+                "userupfile2": "upload\/20160128\/b8ac6b5f312e1a65e277fdcde86ed4f5.jpg",
+                "username2": "정은혜",
+                "noticnt": "0"
+            }
+        ],
+        "token": "b216c87b45d191a9e2ed030e20d090ed"
+    },
+    "runtime": 21.004150390625,
+    "sql": [
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM member",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM member",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "front:member\/check_token",
+            "query": "select count(*)from member where member_rowid=7 and accesstoken='b216c87b45d191a9e2ed030e20d090ed'",
+            "info": {
+                "query": "select count(*)from member where member_rowid=@member_rowid@ and accesstoken=@token@",
+                "type": [
+                    "index",
+                    "0"
+                ],
+                "isDML": 0,
+                "item": {
+                    "member_rowid": {
+                        "vali": "integer",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    },
+                    "token": {
+                        "vali": "max_length[255]",
+                        "isStr": true,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM boardconfirm",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM wedding",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM wedding",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM wedding",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "front:main\/wedding",
+            "query": "select t0.wedding_rowid r,t0.weddingdate regdate,t0.male_rowid mr1,t0.female_rowid mr2, (select upfile from weddingupfile s0 inner join upfile s1 on s0.upfile_rowid=s1.upfile_rowid and s1.upfiletype_rowid=5 and s1.ord=1 where s0.wedding_rowid=t0.wedding_rowid)userupfile1,username1, (select upfile from weddingupfile s0 inner join upfile s1 on s0.upfile_rowid=s1.upfile_rowid and s1.upfiletype_rowid=6 and s1.ord=1 where s0.wedding_rowid=t0.wedding_rowid)userupfile2,username2, (select count(*)from board where wedding_rowid=t0.wedding_rowid and regdate> ifnull((select confirmdate from boardconfirm where wedding_rowid=t0.wedding_rowid and member_rowid=7),0))noticnt, if(male_rowid=7,1,0)ismale from wedding t0 where male_rowid=7 or female_rowid=7",
+            "info": {
+                "query": "select t0.wedding_rowid r,t0.weddingdate regdate,t0.male_rowid mr1,t0.female_rowid mr2, (select upfile from weddingupfile s0 inner join upfile s1 on s0.upfile_rowid=s1.upfile_rowid and s1.upfiletype_rowid=5 and s1.ord=1 where s0.wedding_rowid=t0.wedding_rowid)userupfile1,username1, (select upfile from weddingupfile s0 inner join upfile s1 on s0.upfile_rowid=s1.upfile_rowid and s1.upfiletype_rowid=6 and s1.ord=1 where s0.wedding_rowid=t0.wedding_rowid)userupfile2,username2, (select count(*)from board where wedding_rowid=t0.wedding_rowid and regdate> ifnull((select confirmdate from boardconfirm where wedding_rowid=t0.wedding_rowid and member_rowid=@member_rowid@),0))noticnt, if(male_rowid=@member_rowid@,1,0)ismale from wedding t0 where male_rowid=@member_rowid@ or female_rowid=@member_rowid@",
+                "type": "object",
+                "isDML": 0,
+                "item": {
+                    "member_rowid": {
+                        "vali": "integer",
+                        "isStr": false,
+                        "isNull": true,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "@system\/info",
+            "query": "SHOW FULL COLUMNS FROM boardconfirm",
+            "info": {
+                "query": "SHOW FULL COLUMNS FROM @table@",
+                "type": "object",
+                "isDML": false,
+                "item": {
+                    "table": {
+                        "vali": "",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        },
+        {
+            "path": "front:main\/invitation",
+            "query": "select t0.wedding_rowid r,t0.weddingdate regdate,t0.male_rowid,t0.female_rowid, t31.upfile userupfile1,username1,t41.upfile userupfile2,username2,t2.interestcnt noticnt from wedding t0 inner join guest t1 on t0.wedding_rowid=t1.wedding_rowid inner join guestinvited t2 on t1.guest_rowid=t2.guest_rowid inner join weddingupfile t30 on t0.wedding_rowid=t30.wedding_rowid inner join upfile t31 on t30.upfile_rowid=t31.upfile_rowid and t31.upfiletype_rowid=5 and t31.ord=1 inner join weddingupfile t40 on t0.wedding_rowid=t40.wedding_rowid inner join upfile t41 on t40.upfile_rowid=t41.upfile_rowid and t41.upfiletype_rowid=6 and t41.ord=1 where t2.member_rowid=7",
+            "info": {
+                "query": "select t0.wedding_rowid r,t0.weddingdate regdate,t0.male_rowid,t0.female_rowid, t31.upfile userupfile1,username1,t41.upfile userupfile2,username2,t2.interestcnt noticnt from wedding t0 inner join guest t1 on t0.wedding_rowid=t1.wedding_rowid inner join guestinvited t2 on t1.guest_rowid=t2.guest_rowid inner join weddingupfile t30 on t0.wedding_rowid=t30.wedding_rowid inner join upfile t31 on t30.upfile_rowid=t31.upfile_rowid and t31.upfiletype_rowid=5 and t31.ord=1 inner join weddingupfile t40 on t0.wedding_rowid=t40.wedding_rowid inner join upfile t41 on t40.upfile_rowid=t41.upfile_rowid and t41.upfiletype_rowid=6 and t41.ord=1 where t2.member_rowid=@member_rowid@",
+                "type": "object",
+                "isDML": 0,
+                "item": {
+                    "member_rowid": {
+                        "vali": "integer",
+                        "isStr": false,
+                        "isNull": false,
+                        "default": null,
+                        "like": false
+                    }
+                }
+            }
+        }
+    ]
+}

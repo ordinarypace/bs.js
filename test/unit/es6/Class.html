@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>Class</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.run('Class', null,
+function(flow){
+	flow.ok('기본사용');
+	var Parent = Class();
+	var Child = Class(Parent);
+	var instance = new Child();
+	return instance instanceof Parent && instance instanceof Child;
+}, true,
+function(flow){
+	flow.ok('생성자사용');
+	var Parent = Class({
+		constructor:function(v){
+			this.v = v;
+		}
+	});
+	var Child = Class(Parent,{
+		constructor:function(v){
+			this.v = v;
+		}
+	});
+	var Cls = Class({
+		constructor:function(v){
+			this.v = v;
+		}
+	});
+	var p = new Parent(1), c = new Child(2), t = new Cls(3);
+	return p.v + c.v + t.v;
+}, 6,
+function(flow){
+	flow.ok('생성자 Super');
+	var Parent = Class({
+		constructor:function(v){
+			this.a = v;
+		}
+	});
+	var Child = Class(Parent, {
+		constructor:function(a, b){
+			this.b = b;
+			Super(a);
+		}
+	});
+	var c = new Child(1, 2);
+	return c.a + c.b;
+}, 3,
+function(flow){
+	flow.ok('정적메소드와 Super');
+	var Parent = Class({
+		'static test':function(v){
+			return v * 2;
+		}
+	});
+	var Child = Class(Parent,{
+		'static test':function(v){
+			return Super.test(v) + 3;
+		}
+	});
+	return Child.test(2);
+}, 7,
+function(flow){
+	flow.ok('정적 제네레이터');
+	var Parent = Class({
+		'static test':function(v){
+			return v * 2;
+		}
+	});
+	var Child = Class(Parent, {
+		'static *test':function(v){
+			if(v.count--) Yield(Super.test(v.count), -1);
+		}
+	});
+	var r = 0;
+	For.Of(Child.test({count:3}), function(v){
+		r += v;
+	});
+	return r;
+}, 6,
+function(flow){
+	flow.ok('메소드와 Super');
+	var Parent = Class({
+		test:function(v){
+			return v * 2;
+		}
+	});
+	var Child = Class(Parent,{
+		test:function(v){
+			return Super.test(v) + 3;
+		}
+	});
+	var child = new Child();
+	return child.test(2);
+}, 7,
+function(flow){
+	flow.ok('메소드 제네레이터');
+	var Parent = Class({
+		test:function(v){
+			return v * 2;
+		}
+	});
+	var Child = Class(Parent, {
+		constructor:function(v){this.a = v},
+		'*test':function(v){
+			if(v.count--) Yield(Super.test(v.count) + this.a, -1);
+		}
+	});
+	var child = new Child(2);
+	var r = 0;
+	For.Of(child.test({count:3}), function(v){
+		r += v;
+	});
+	return r;
+}, 12,
+function(flow){
+	flow.ok('등록되는 클래스');
+	var Child = Class({register:true});
+	var child = new Child();
+	return bs.fromId(child.getId()) === child
+}, true,
+function(flow){
+	flow.ok('등록삭제1');
+	var Child = Class({register:true});
+	var child = new Child();
+	child.removeId();
+	return bs.fromId(child.getId());
+}, undefined,
+function(flow){
+	flow.ok('등록삭제2');
+	var Child = Class({register:true});
+	var child = new Child();
+	bs.removeId(child.getId());
+	return bs.fromId(child.getId());
+}, undefined
+);
+bsTest.doc('Class', function(){/*
+ES6의 class를 대체하여 클래스를 생성함.
+
+### 기본사용
+
+Class([parent:Class,] cls:Object);
+
+1. parent:Class - 상속받을 클래스를 정의함. 생략시 첫번째 인자가 cls가 됨
+2. cls:Object - 클래스를 정의할 객체. 생략가능
+<pre>
+var Parent = Class();
+var Child1 = Class(Parent);
+var Child2 = Class(Parent, {test:function(){}});
+var instance = new Child1();
+</pre>
+
+### 전역 등록 인스턴스 시스템
+cls인자에서 register:true키를 포함하는 경우 아래와 같은 내장 메소드가 생겨남.
+
+1. getId() - 고유한 인스턴스별 키를 반환함.
+2. removeId() - register타입인 경우 전역 캐쉬에서 지움.
+
+<pre>
+var Parent = Class({
+	register:true
+});
+var c = new Parent();
+console.log( bs.fromId(c.getId()) === c ); //true
+</pre>
+
+### 생성자 사용
+
+생성자 함수. 내부에서 Super를 호출하면 부모생성자를 호출할 수 있음.
+
+* cls인자 안에 constructor:function 를 추가함.
+
+<pre>
+var Parent = Class({
+	constructor:function(v){
+		this.a = v;
+	}
+});
+var Child = Class(Parent, {
+	constructor:function(a, b){
+		this.b = b;
+		Super(a);
+	}
+});
+var c = new Child(1, 2);
+</pre>
+
+### 메소드
+
+일반적인 이름이나 *로 시작하는 이름으로 제네레이터를 등록할 수 있음.
+
+1. name:String - 메소드의 이름. 이름이 *로 시작하는 경우 제네레이터로 처리됨.
+2. method:function - 메소드. Super.xxx() 형태로 부모 클래스의 메소드를 호출할 수 있음.
+
+<pre>
+var Parent = Class({
+	test:function(v){
+		return v * 2;
+	}
+});
+var Child = Class(Parent, {
+	test:function(v){
+		return Super.test(v) + 3;
+	}
+});
+var child = new Child();
+console.log(child.test(2)); //4 + 3 = 7
+</pre>
+
+### 정적 메소드
+
+'static xxx' 형태의 키로 정적메소드나 'static *xxx' 형태로 정적 제네레이터를 등록할 수 있음.
+
+1. name:String - 정적메소드의 이름. 이름이 *로 시작하는 경우 제네레이터로 처리됨.
+2. method:function - 정적메소드. Super.xxx() 형태로 부모 클래스의 정적메소드를 호출할 수 있음.
+
+<pre>
+var Parent = Class{
+	test:function(v){
+		return v * 2;
+	}
+});
+var Child = Class(Parent, {
+	'static test':function(v){
+		return Super.test(v) + 3;
+	}
+});
+console.log(Child.test(2)); //4 + 3 = 7
+</pre>
+
+### 참고
+* <a href="Gene.html">Gene - generator 구현 함수</a>
+*/});
+bsTest.doc('bs.fromId(id:String)', function(){/*
+인스턴스의 고유한 id로부터 인스턴스 자체를 얻음. 등록되는 클래스의 인스턴스에 한함.
+
+### 인자
+
+1. id:String - 얻고자 하는 인스턴스의 id. getId메소드를 통해 취득.
+
+### 반환값
+instance - 해당 id의 인스턴스
+
+### 예제
+<pre>
+var Cls = Class(null, true); //등록되는 클래스로 선언
+var test = new Cls;
+var id = test.getId();
+
+test === bs.fromId(id) //true
+</pre>
+*/});
+bsTest.doc('bs.removeId(id:String)', function(){/*
+등록된 인스턴스를 제거함
+
+### 인자
+
+1. id:String - 삭제하고 하는 인스턴스의 id. getId메소드를 통해 취득.
+
+### 반환값
+instance - 해당 id의 인스턴스
+
+### 예제
+<pre>
+var Cls = Class(null, true); //등록되는 클래스로 선언
+var test = new Cls;
+var id = test.getId();
+
+test === bs.fromId(id) //true
+
+bs.removeId(id);
+console.log(bs.fromId(id));//undefined
+</pre>
+*/});
+</script>
+</body>
+</html>

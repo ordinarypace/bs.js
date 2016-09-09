@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>Iter</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.run('Iter', null,
+function(flow){
+	flow.ok('String 구현');
+	var iter = 'abc'[Symb.iterator]();
+	var r = iter.next().value + iter.next().value + iter.next().value;
+	var done = iter.next().done;
+	return r == 'abc' && done === true;
+}, true,
+function(flow){
+	flow.ok('Array 구현');
+	var iter = [1,2][Symb.iterator]();
+	var r = iter.next().value + iter.next().value;
+	var done = iter.next().done;
+	return r == 3 && done === true;
+}, true
+);
+bsTest.doc('Iter', function(){/*
+이터레이터의 구현체로 Array와 String을 폴리필함
+
+### 메소드
+* next() - 호출 시, 아직 남은 엘리먼트가 있는 경우는 {value:v, done:false}, 이미 다 순회한 경우는 {value:undefined, done:true}로 응답함.
+
+### 예제
+<pre>
+var iter = [1,2,3][Symb.iterator]();
+console.log(iter.next()); //{value:1, done:false}
+console.log(iter.next()); //{value:2, done:false}
+console.log(iter.next()); //{value:3, done:false}
+console.log(iter.next()); //{value:undefined, done:true}
+</pre>
+*/});
+</script>
+</body>
+</html>

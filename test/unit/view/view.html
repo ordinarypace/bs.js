@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>view</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<div data-vm="vm.v0(m.m0)" data-view="tmpl1" style="display:none">
+	<div data-tmpl="tmpl1" data-s="background,.{background}">
+		<div data-s="html,.{title}"></div>
+	</div>
+</div>
+<div data-vm="m.m1" data-view="tmpl2" style="display:none">
+	<div data-tmpl="tmpl2" data-s="background,.{background}">
+		<div data-s="html,.{title}"></div>
+	</div>
+</div>
+<div data-vm="m.m2" data-view="tmpl3" style="display:none">
+	<div data-tmpl="tmpl3" data-role="header" data-s="html,@{m.m2header}"></div>
+	<div data-tmpl="tmpl3" data-role="top" data-s="html,.{top}"></div>
+	<div data-tmpl="tmpl3" data-s="background,.{background}">
+		<div data-s="html,.{title}"></div>
+	</div>
+	<div data-tmpl="tmpl3" data-role="bottom" data-s="html,.{bottom}"></div>
+	<div data-tmpl="tmpl3" data-role="footer" data-s="html,@{m.m2footer}"></div>
+</div>
+<div data-vm="m.m3" data-view="tmpl4" style="display:none">
+	<div data-tmpl="tmpl4" data-s="background,.{background}">
+		<div data-s="html,.{title}"></div>
+	</div>
+</div>
+<div data-vm="m.m4" data-view="tmpl5" style="display:none">
+	<div data-tmpl="tmpl5" data-role="header" data-s="html,@{m.m4header}"></div>
+	<div data-tmpl="tmpl5" data-role="top" data-s="html,.{top}"></div>
+	<div data-tmpl="tmpl5" data-s="background,.{background}">
+		<div data-s="html,.{title}"></div>
+	</div>
+	<div data-tmpl="tmpl5" data-role="bottom" data-s="html,.{bottom}"></div>
+	<div data-tmpl="tmpl5" data-role="footer" data-s="html,@{m.m4footer}"></div>
+</div>
+<div data-vm="m.m5" data-view="*" style="display:none">
+	<div data-tmpl="tmpl6" data-test="tmpl6" data-s="background,#faa">
+		<div data-s="html,.{title}"></div>
+	</div>
+	<div data-tmpl="tmpl7" data-test="tmpl7" data-s="background,#afa">
+		<div data-s="html,.{title}"></div>
+	</div>
+	<div data-tmpl="tmpl8" data-test="tmpl8" data-s="background,#aaf">
+		<div data-s="html,.{title}"></div>
+	</div>
+</div>
+<div data-vm="m.m6" data-view="tmpl9" style="display:none">
+	<div data-tmpl="tmpl9" data-vm=".{children}" data-view="tmpl10" data-s="background,#aaf">
+		<div data-tmpl="tmpl10" data-s="html,.{title}"></div>
+	</div>
+</div>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.doc('렌더링시스템 개요', function(){/*
+### @data-s
+각 엘리먼트별로 속성이나 스타일 등을 조정하기 위해 data-s속성에 키,값..형식으로 기술하면 렌더링 시마다 이를 반영해줌.
+
+<pre>
+&lt;div data-s="html,안녕">&lt;/div>
+&lt;script>
+bs.render();
+&lt;/script>
+</pre>
+
+### bs.render([id:String])
+html을 데이터기반으로 렌더링하며 선택적으로 id를 넘기면 해당 엘리먼트 하위만 렌더링을 갱신함. 기본값은 body임.
+
+
+### MVVM 적용
+모델-렌더에 기반을 둔 아키텍쳐는 뷰측에서 모델의 데이터를 뷰에 맞게 해석해야 함.
+
+1. 이를 중간에 완화해주기 위해 모델→모델뷰→뷰 구조를 도입함.
+2. VM이 로직을 처리하므로 로직없는 뷰가 구현되어 유지보수성을 높임.
+
+특정 엘리먼트가 MVVM을 적용받는다면 data-vm과 data-view를 기술해야함.
+
+#### @data-vm
+만약 엘리먼트가 모델렌더에 기반하고 있다면 참고할 모델을 지정해야함. 이를 다음과 같이 기술할 수 있음.
+
+1. 모델키를 기술하는 경우 - "test.data" 기본 vm이 지정되고 모델은 test.data
+2. 뷰모델 처리함수를 기술하는 경우 - "test.vm()" vm이 지정되고 모델은 없음
+3. 뷰모델과 모델을 동시에 기술하는 경우 - "test.vm(test.data)" vm과 모델이 따로 지정됨.
+
+<pre>
+&lt;div data-vm="test.data">&lt;/div>
+&lt;div data-vm="test.vm()">&lt;/div>
+&lt;div data-vm="test.vm(test.data)">&lt;/div>
+</pre>
+
+#### @data-view
+모델렌더에서 데이터부분의 기술은 data-vm에서 했다면 사용할 템플릿의 이름을 data-view에서 지정.
+
+1. data-view="템플릿이름" 형태 - 해당 템플릿으로 렌더링됨.
+2. data-view="*" 형태 - 데이터의 각 행에 '@tmpl' 항목의 값으로 템플릿을 찾아와 렌더링됨.
+
+<pre>
+&lt;div data-view="tmpl1">&lt;/div>
+&lt;div data-view="*">&lt;/div>
+</pre>
+
+### 템플릿제작
+MVVM이 소비할 view의 템플릿을 제작하려면 data-tmpl을 반드시 기술하고 data-role은 선택적이고 기본값은 'body'임
+
+#### @data-tmpl
+해당 템플릿의 이름을 정의하고 그 자식 전체를 템플릿으로 처리함. 단 모든 템플릿은 독립적으로 처리되므로 자식 템플릿의 개념은 없음.
+
+<pre>
+&lt;div data-tmpl="tmpl1">
+	&lt;div data-s="html,.{title}">
+&lt;/div>
+</pre>
+
+#### @data-role
+하나의 템플릿이름안에는 5개의 role이 지정될 수 있음.
+
+1. 'body' - 레코드만큼 반복되는 요소. 기본값임.
+2. 'header' - 한 번만 위쪽에 등장하는 요소.
+3. 'footer' - 한 번만 아래쪽에 등장하는 요소.
+4. 'top' - 레코드만큼 반복되며 body위에 등장
+5. 'bottom' - 레코드만큼 반복되며 body 아래에 등장
+<pre>
+&lt;div data-vm="test" data-view="tmpl1">
+	&lt;div data-tmpl="tmpl1" data-role="header">header&lt;/div>
+	&lt;div data-tmpl="tmpl1" data-role="top" data-s="html,.{top}">&lt;/div>
+	&lt;div data-tmpl="tmpl1">
+		&lt;div data-s="html,.{title}">
+	&lt;/div>
+	&lt;div data-tmpl="tmpl1" data-role="bottom" data-s="html,.{bottom}">&lt;/div>
+	&lt;div data-tmpl="tmpl1" data-role="footer">footer&lt;/div>
+&lt;/div>
+&lt;script>
+bs('test', [
+	{title:'record0', top:'top0', bottom:'bottom0'},
+	{title:'record1', top:'top1', bottom:'bottom2'}
+]);
+bs.render();
+&lt;/script>
+</pre>
+렌더링 결과
+<pre>
+&lt;div>
+	&lt;div data-group="tmpl1|header">header&lt;/div>
+	
+	&lt;div data-group="tmpl1|top|0">top0&lt;/div>
+	&lt;div data-group="tmpl1|body|0">
+		&lt;div>record0&lt;/div>
+	&lt;/div>
+	&lt;div data-group="tmpl1|bottom|0">bottom0&lt;/div>
+	
+	&lt;div data-group="tmpl1|top|1">top0&lt;/div>
+	&lt;div data-group="tmpl1|body|1">
+		&lt;div>record1&lt;/div>
+	lt;/div>
+	&lt;div data-group="tmpl1|bottom|1">bottom1&lt;/div>
+	
+	&lt;div data-group="tmpl1|footer">footer&lt;/div>
+&lt;/div>
+</pre>
+*/});
+bs('vm', {v0:function(m){return m;}}, 'm', {
+	m0:[
+		{background:'#faa', title:'m0_0'},
+		{background:'#afa', title:'m0_1'},
+		{background:'#aaf', title:'m0_2'}
+	],
+	m1:[
+		{background:'#faa', title:'m1_0'},
+		{background:'#afa', title:'m1_1'},
+		{background:'#aaf', title:'m1_2'}
+	],
+	m2header:'m2header', m2footer:'m2footer',
+	m2:[
+		{background:'#faa', title:'m2_0', top:'top0', bottom:'bottom0'},
+		{background:'#afa', title:'m2_1', top:'top1', bottom:'bottom1'},
+		{background:'#aaf', title:'m2_2', top:'top2', bottom:'bottom2'}
+	],
+	m3:[{background:'#faa', title:'m3_0'}],
+	m4header:'m4header', m4footer:'m4footer',
+	m4:[
+		{background:'#faa', title:'m4_0', top:'top0', bottom:'bottom0'},
+	],
+	m5:[
+		{'@tmpl':'tmpl6', title:'m5_0'},
+		{'@tmpl':'tmpl7', title:'m5_1'},
+		{'@tmpl':'tmpl8', title:'m5_2'}
+	],
+	m6:[
+		{children:[{title:'title00'},{title:'title01'}]},
+		{children:[{title:'title10'},{title:'title11'}]},
+		{children:[{title:'title20'},{title:'title21'}]}
+	]
+});
+bs.render();
+bsTest.run('최초 렌더링', function(f){},
+function(f){
+	f.ok('vm함수 - 갯수대로 렌더링');
+	var div = document.querySelectorAll('body > div');
+	return div[0].children.length;
+}, 3,
+function(f){
+	f.ok('vm함수 - 데이터에 맞게 렌더링');
+	var div = document.querySelectorAll('body > div');
+	return div[0].children[1].firstElementChild.innerHTML;
+}, bs('m.m0.1.title'),
+function(f){
+	f.ok('기본m - 갯수대로 렌더링');
+	var div = document.querySelectorAll('body > div');
+	return div[1].children.length;
+}, 3,
+function(f){
+	f.ok('기본m - 데이터에 맞게 렌더링');
+	var div = document.querySelectorAll('body > div');
+	return div[1].children[1].firstElementChild.innerHTML;
+}, bs('m.m1.1.title'),
+function(f){
+	f.ok('role - header');
+	var div = document.querySelectorAll('body > div');
+	return div[2].firstElementChild.innerHTML;
+}, bs('m.m2header'),
+function(f){
+	f.ok('role - footer');
+	var div = document.querySelectorAll('body > div');
+	return div[2].lastElementChild.innerHTML;
+}, bs('m.m2footer'),
+function(f){
+	f.ok('role - top');
+	var div = document.querySelectorAll('body > div');
+	return div[2].children[1].innerHTML;
+}, bs('m.m2.0.top'),
+function(f){
+	f.ok('role - body');
+	var div = document.querySelectorAll('body > div');
+	return div[2].children[2].firstElementChild.innerHTML;
+}, bs('m.m2.0.title'),
+function(f){
+	f.ok('role - bottom');
+	var div = document.querySelectorAll('body > div');
+	return div[2].children[3].innerHTML;
+}, bs('m.m2.0.bottom'),
+function(f){
+	f.ok('role - total');
+	var div = document.querySelectorAll('body > div');
+	return div[2].children.length;
+}, 2 + bs('m.m2.length') * 3
+);
+bsTest.run('여러번 렌더링', null,
+function(f){
+	setTimeout(function(){
+		bs('m.m3').push(
+			{background:'#afa', title:'m3_1'},
+			{background:'#aaf', title:'m3_2'}
+		);
+		bs.render();
+		f.run();
+	}, 1);
+	f.hold();
+	f.ok('데이터증감 - 기본상태 1개');
+	var div = document.querySelectorAll('body > div');
+	return div[3].children.length;
+}, 1,
+function(f){
+	setTimeout(function(){
+		bs('m.m3').pop();
+		bs.render();
+		f.run();
+	}, 1);
+	f.hold();
+	f.ok('데이터증감 - 증가상태');
+	var div = document.querySelectorAll('body > div');
+	return div[3].children.length;
+}, 3,
+function(f){
+	f.ok('데이터증감 - 감소상태');
+	var div = document.querySelectorAll('body > div');
+	return div[3].children.length;
+}, 2
+);
+bsTest.run('여러번 렌더링 role포함1', null,
+function(f){
+	setTimeout(function(){
+		bs('m.m4').push(
+			{background:'#afa', title:'m4_1', top:'top1', bottom:'bottom1'},
+			{background:'#aaf', title:'m4_2', top:'top2', bottom:'bottom2'}
+		);
+		bs.render();
+		f.run();
+	}, 1);
+	f.hold();
+	f.ok('role포함 - 기본1개');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children.length;
+}, 5,
+function(f){
+	f.ok('role포함 - 증가상태 header');
+	var div = document.querySelectorAll('body > div');
+	return div[4].firstElementChild.innerHTML;
+}, bs('m.m4header'),
+function(f){
+	f.ok('role포함 - 증가상태 footer');
+	var div = document.querySelectorAll('body > div');
+	return div[4].lastElementChild.innerHTML;
+}, bs('m.m4footer'),
+function(f){
+	f.ok('role포함 - 증가상태 top');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children[1].innerHTML;
+}, bs('m.m4.0.top'),
+function(f){
+	f.ok('role포함 - 증가상태 body');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children[2].firstElementChild.innerHTML;
+}, bs('m.m4.0.title'),
+function(f){
+	f.ok('role포함 - 증가상태 bottom');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children[3].innerHTML;
+}, bs('m.m4.0.bottom'),
+function(f){
+	setTimeout(function(){
+		bs('m.m4').pop();
+		bs.render();
+		f.run();
+	}, 1);
+	f.hold();
+	f.ok('role포함 - 증가상태 total');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children.length;
+}, function(){return 2 + bs('m.m4.length') * 3;},
+function(f){
+	f.ok('role포함 - 감소상태 header');
+	var div = document.querySelectorAll('body > div');
+	return div[4].firstElementChild.innerHTML;
+}, bs('m.m4header'),
+function(f){
+	f.ok('role포함 - 감소상태 footer');
+	var div = document.querySelectorAll('body > div');
+	return div[4].lastElementChild.innerHTML;
+}, bs('m.m4footer'),
+function(f){
+	f.ok('role포함 - 감소상태 top');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children[1].innerHTML;
+}, bs('m.m4.0.top'),
+function(f){
+	f.ok('role포함 - 감소상태 body');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children[2].firstElementChild.innerHTML;
+}, bs('m.m4.0.title'),
+function(f){
+	f.ok('role포함 - 감소상태 bottom');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children[3].innerHTML;
+}, bs('m.m4.0.bottom'),
+function(f){
+	f.ok('role포함 - 감소상태 total');
+	var div = document.querySelectorAll('body > div');
+	return div[4].children.length;
+}, function(){return 2 + bs('m.m4.length') * 3;}
+);
+bsTest.run('* 렌더링', null,
+function(f){
+	f.ok('* - 기본상태 3개');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children.length;
+}, 3,
+function(f){
+	f.ok('* - 기본상태 1번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[0].getAttribute('data-test');
+}, 'tmpl6',
+function(f){
+	f.ok('* - 기본상태 2번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[1].getAttribute('data-test');
+}, 'tmpl7',
+function(f){
+	setTimeout(function(){
+		bs('m.m5').pop();
+		bs.render();
+		f.run();
+	}, 1);
+	f.hold();
+	f.ok('* - 기본상태 3번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[2].getAttribute('data-test');
+}, 'tmpl8',
+function(f){
+	f.ok('* - 감소상태');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children.length;
+}, 2,
+function(f){
+	f.ok('* - 감소상태 1번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[0].getAttribute('data-test');
+}, 'tmpl6',
+function(f){
+	setTimeout(function(){
+		bs('m.m5').push(
+			{'@tmpl':'tmpl8', title:'m5_2'}
+		);
+		bs.render();
+		f.run();
+	}, 1);
+	f.hold();
+	f.ok('* - 감소상태 2번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[1].getAttribute('data-test');
+}, 'tmpl7',
+function(f){
+	f.ok('* - 증가상태 3개');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children.length;
+}, 3,
+function(f){
+	f.ok('* - 증가상태 1번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[0].getAttribute('data-test');
+}, 'tmpl6',
+function(f){
+	f.ok('* - 증가상태 2번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[1].getAttribute('data-test');
+}, 'tmpl7',
+function(f){
+	f.ok('* - 증가상태 3번');
+	var div = document.querySelectorAll('body > div');
+	return div[5].children[2].getAttribute('data-test');
+}, 'tmpl8'
+);
+</script>
+</body>
+</html>

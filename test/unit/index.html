@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>bs4-bs</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0}
+#doc{margin:10px}
+a{text-decoration:none}
+</style>
+</head>
+<body>
+<script src="http://js.bsapi.co/4/build/test.php"></script>
+<script src="http://js.bsapi.co/test/2/"></script>
+<script>
+bsTest.doc('@main', function(){/*
+* <a href="main/bs.html">bs()</a>
+* <a href="main/polyfill.html">폴리필의 범위</a>
+* <a href="main/detect.html">디텍팅의 범위</a>
+* <a href="main/boot.html">부팅과정</a>
+*/});
+bsTest.doc('@ani', function(){/*
+* <a href="ani/ani.html">
+bs.ani - 애니메이션을 설정<br>
+bs.stop - 애니메이션 중지<br>
+bs.pause - 애니메이션 일시중지<br>
+bs.resume - 애니메이션 재게<br>
+bs.scrollTo - 특정 위치로 스크롤. 애니메이션 부여가능
+</a>
+*/});
+bsTest.doc('@es6', function(){/*
+* <a href="es6/Symb.html">Symb - Symbol 구현 함수</a>
+* <a href="es6/Tmpl.html">Tmpl - template문자열 구현 함수</a>
+* <a href="es6/Iter.html">Iter - 이터레이터 구현 클래스</a>
+* <a href="es6/Dest.html">Dest - 해체(destructuring) 구현 함수</a>
+* <a href="es6/ForOf.html">ForOf - for of문 구현 클래스</a>
+* <a href="es6/Gene.html">Gene - generator 구현 함수</a>
+* <a href="es6/Class.html">Class - class 생성 함수</a>
+*/});
+bsTest.doc('@date', function(){/*
+* <a href="date/date.html">
+bs.date - Date객체를 얻음<br>
+bs.dateAdd - 기간을 더하여 새로운 Date를 얻음<br>
+bs.dateDiff - 두 Date사이의 기간을 계산<br>
+bs.datePart - Date의 내용을 문자열로 치환<br>
+bs.datePretty - 두 Date사이의 차이를 서술적으로 표현함<br>
+bs.dateLang - Date 언어설정<br>
+bs.dateTemplate - 언어별 메세지 정의
+</a>
+*/});
+bsTest.doc('@dom', function(){/*
+* <a href="dom/dom.html">
+bs.css - 외부 css파일을 로딩하거나 문자열을 파싱하여 css로 변환<br>
+bs.getId - document.getElementById의 별명. 캐쉬를 지원<br>
+bs.size - 윈도우의 크기와 스크롤을 얻음<br>
+bs.scroll - 특정 돔의 실제 크기와 스크롤을 얻음
+</a>
+* <a href="dom/element.html">엘리먼트 시스템</a>
+* <a href="dom/event.html">이벤트 시스템</a>
+*/});
+bsTest.doc('@encrypt', function(){/*
+bs.encode - encodeURIComponent의 별명<br>
+bs.decode - decodeURIComponent의 별명<br>
+*/});	
+bsTest.doc('@math', function(){/*
+* <a href="math/math.html">
+bs.rand - 캐쉬가 지원되는 정수 랜덤<br>
+bs.randf - 캐쉬가 지원되는 실수 랜덤<br>
+bs.sin, bs.cos, bs.tan, bs.atan - 캐쉬가 지원되는 삼각함수<br>
+bs.toradian - 각도를 라디안으로 변환하기 위해 곱할 상수<br>
+bs.toangle - 라디안을 각도로 변환하기 위해 곱할 상수
+</a>
+*/});
+bsTest.doc('@network', function(){/*
+* <a href="network/network.html">
+bs.timeout - 통신시의 타임아웃을 정의<br>
+bs.require - commonJS로 모듈을 로딩<br>
+bs.js - 자바스크립트를 로딩하거나 jsonp통신을 처리<br>
+bs.crossproxy - 크로스프록시 서버를 설정<br>
+bs.baseheader - http통신시 기본 요청헤더를 설정<br>
+bs.get, bs.post, bs.put, bs.del - 각 http메소드에 해당되는 통신을 함
+</a>
+*/});
+bsTest.doc('@render', function(){/*
+* <a href="view/view.html">렌더링 시스템</a>
+*/});
+bsTest.doc('@util', function(){/*
+* <a href="util/white.html">bs.white - 변수의 밸리데이션을 검사함</a>
+* <a href="util/util.html">
+bs.FAIL - 실패시 bs가 반환하는 일반적인 값<br>
+bs.img2src - image엘리먼트를 base64기반의 문자열 캔버스를 이용해 src로 변환<br>
+bs.localSize - 로컬스토리지의 크기를 관리<br>
+bs.local - 로컬스토리지를 파일시스템처럼 관리<br>
+bs.log - 로그를 기록함<br>
+bs.namespace - data-* 속성에서 bs가 바라볼 기본키를 정의함<br>
+bs.xml - xml문자열을 Object로 변환
+</a>
+*/});
+bsTest.doc('@url', function(){/*
+* <a href="url/url.html">
+bs.ck - 쿠키를 읽거나 설정함<br>
+bs.hash - 해쉬를 파싱함<br>
+bs.queryString - 쿼리스트링을 파싱함
+</a>
+*/});
+bsTest.doc('@validation', function(){/*
+* <a href="vali/system.html">밸리데이션 시스템</a>
+* <a href="vali/vali.html">
+bs.OR - 룰 조건의 결합을 논리합으로 처리
+bs.rule - 룰을 정의
+bs.msg - 메세지함수를 등록
+bs.validate - 밸리데이션을 실행함
+</a>
+*/});
+</script>
+</body>
+</html>

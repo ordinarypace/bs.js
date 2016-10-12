@@ -14,10 +14,19 @@ bs.bsImmutable('FAIL', FAIL);
 		var a = arguments, i = a.length;
 		while(i--) if(lock[a[i]]) return 1;
 	},
-	'locker', function(k, f){
+	'locker', function(k, f, time){
+		var t;
+		if(time) t = function(){if(bs.isLock(k)) bs.unlock(k);};
 		return function(){
 			if(lock[k]) return;
+			if(time) setTimeout(t, time);
 			return lock[k] = 1, f.apply(this, arguments);
+		};
+	},
+	'unlocker', function(k, f){
+		return function(){
+			if(!lock[k]) return;
+			return lock[k] = 0, f.apply(this, arguments);
 		};
 	});
 })();
@@ -100,8 +109,12 @@ bs.bsImmutable('namespace', function(v){ns = 'data-' + v + '-';}),
 		},
 		rc = 0, rand = {};
     bs.bsImmutable(
-	'rand', function(a, b){return parseInt((rand[rc = (++rc) % 2000] || (rand[rc] = Math.random())) * (b - a + 1)) + a;},
-	'randf', function(a, b){return (rand[rc = (++rc) % 2000] || (rand[rc] = Math.random())) * (b - a) + a;},
+	/*
+	'rand', function(a, b){return parseInt((rand[rc = (++rc) % 7000] || (rand[rc] = Math.random())) * (b - a + 1)) + a;},
+	'randf', function(a, b){return (rand[rc = (++rc) % 7000] || (rand[rc] = Math.random())) * (b - a) + a;},
+	*/
+	'rand', function(a, b){return parseInt(Math.random() * (b - a + 1)) + a;},
+	'randf', function(a, b){return Math.random() * (b - a) + a;},
 	'sin', mk('sin'), 'cos', mk('cos'), 'tan', mk('tan'), 'atan', mk('atan'),
 	'toradian', Math.PI / 180, 'toangle', 180 / Math.PI
 	);

@@ -1,4 +1,12 @@
 if(doc)(function(){
+domGroup = function(el){
+	var el0, group;
+	if(group = el.bsG) return group;
+	el.S = domS, el0 = el;
+	do{if(group = el0.getAttribute(ns + 'group')) return el.bsG = group;
+	}while((el0 = el0.parentNode) && el0.nodeType == 1);
+	return el.bsG = '__root__';
+},
 bs.bsImmutable(
 'getId', docId,
 'size', (function(){
@@ -35,17 +43,21 @@ bs.bsImmutable(
 		v.width = doc.body.scrollWidth;
 		return v;
 	};
-})()
-),
-domGroup = function(el){
-	var el0, group;
-	if(group = el.bsG) return group;
-	el.S = domS, el0 = el;
-	do{if(group = el0.getAttribute(ns + 'group')) return el.bsG = group;
-	}while((el0 = el0.parentNode) && el0.nodeType == 1);
-	return el.bsG = '__root__';
+})(),
+'marker', function(v){
+	var r = doc.getElementsByTagName('b'), el, els, i, j;
+	for(els = [], i = 0, j = r.length; i < j; i++){
+		if(!v || r[i].getAttribute('data-marker') == v){
+			els[els.length] = {
+				key:v,
+				el:r[i].nextElementSibling, 
+				data:r[i].getAttribute('data-data')
+			};
+		}
+	}
+	return els;
 },
-domS = (function(){
+'domS', domS = (function(){
 	var html, del, insertBefore, util, x, y;
 	del = function(el){
 		if(el.parentNode){
@@ -163,6 +175,9 @@ domS = (function(){
 					t0 = children(el);
 					if(k == '$') return t0[t0.length - 1];
 					else if(k.isNumber()) return t0[k];
+					else if(k){
+						return el.querySelectorAll(k);
+					}
 					return t0;
 				}
 				if(v === null){
@@ -219,7 +234,7 @@ domS = (function(){
 		if(a[0] === null) return del(this);
 		if(a[0].nodeType == 1) self = a[0], i = 1;
 		else self = this;
-		if(a[i] instanceof Array) a = a[i], i = 0, j = a.length;
+		if(a[i] instanceof Array || a[i].isArguments()) a = a[i], i = 0, j = a.length;
 		while(i < j){
 			if(!attr[k = a[i++]]){
 				if(k == 'this') attr[k] = THIS;
@@ -234,7 +249,7 @@ domS = (function(){
 			}
 			v = a[i++];
 			if(typeof v == STR){
-				v = v.ex(self);
+				v = v.ex();
 				if(v.isNumber()) v = parseFloat(v);
 				if(v == 'null') v = null;
 			}
@@ -243,5 +258,6 @@ domS = (function(){
 		}
 		return v;
 	};
-})();
+})()
+);
 })();

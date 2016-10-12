@@ -13,7 +13,9 @@ var NONE = -1, STR = 'string', NUM = 'number', OBJ = 'object', FUN = 'function',
 		var c = {};
 		return function(id){
 			var el;
-			return c[id] || ((el = doc.getElementById(id)) ? (el.S = domS, c[id] = el) : null);
+			if(id.charAt(0) == '@') c[id = id.substr(1)] = null;
+			if(el = c[id], !el) if(c[id] = el = doc.getElementById(id)) el.S = domS;
+			return el;
 		};
 	})(),
 	docTag = (function(){
@@ -40,7 +42,7 @@ var NONE = -1, STR = 'string', NUM = 'number', OBJ = 'object', FUN = 'function',
 		sysEv:{}
 	}},
 	app = DATA.app, sys = DATA.sys, attr = sys.dom.attr, handler = sys.dom.handler, eOn, eOff,
-	wkey, bs, ns = 'data-', templateData, render,
+	wkey, bs, ns = 'data-', templateData, render, renderUpdate,
 	json, log, detect, 
 	Style, Css, domS, domGroup;
 	
@@ -53,8 +55,8 @@ bs = function(v){
 		a = arguments, i = 0, j = a.length;
 		while(i < j){
 			k = a[i++].trim();
-			if(k.charAt(0) == '$'){
-				k = k.substr(1);
+			if(k.charAt(0) == '.'){
+				if(k = k.substr(1), !k) return templateData;
 				if(k.indexOf('.') == NONE) return templateData[k];
 				target = templateData, isCursor = 1;
 			}else target = app;

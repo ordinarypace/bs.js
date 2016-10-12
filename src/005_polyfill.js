@@ -10,13 +10,20 @@
 			};
 		})()
 	};
-	if(Object.defineProperty){
-		try{
-			Object.defineProperty(Object.prototype, 'bsImmutable', o);
-		}catch(e){
-			Object.prototype.bsImmutable = o.value;
-		}
-	}else Object.prototype.bsImmutable = o.value;
+	try{
+		Object.defineProperty(Object.prototype, 'bsImmutable', o);
+	}catch(e){
+		Object.prototype.bsImmutable = function(){
+			var a = arguments, i = 0, j = a.length;
+			while(i < j) this[a[i++]] = a[i++];
+			return this;
+		};
+	}
+	Object.prototype.isArguments = (function(){
+		var f = Object.prototype.toString;
+		return function(){return f.call(this) == '[object Arguments]';};
+	})();
+	
 	//Object
 	for(k in o = {
 		freeze:through,
@@ -93,6 +100,12 @@
 		forEach:function(f){
 			for(var i = 0, j = this.length; i < j; i++) f(this[i], i, this);
 		},
+		forInterval:function(f, t){
+			var i = 0, id, self = this;
+			id = setInterval(function(){
+				if(f(self[i], i, self) || ++i == self.length) clearInterval(id);
+			}, t || 1);
+		},
 		map:function(f){
 			for(var r = [], i = 0, j = this.length; i < j; i++) r[i] = f(this[i], i, this);
 			return r;
@@ -104,6 +117,25 @@
 		reduce:function(){
 			for(var f = arguments[0], i = 0, j = this.length, r = arguments.length == 2 ? arguments[1] : this[i++]; i < j; i++) r = f(r, this[i], i, this);
 			return r;
+		},
+		watch:function(){
+			for(var f = arguments[0], i = 0, j = this.length, r = arguments.length == 2 ? arguments[1] : this[i++]; i < j; i++){
+				r = f(r, this[i], i, this);
+				if(r == bs.FAIL) break;
+			}
+			return r;
+		},
+		reduceInterval:function(){
+			var a = arguments, f = a[0], i = 0, r = a.length > 1 ? a[1] : this[i++], id, self = this;
+			var s, stop = function(){s = true;};
+			id = setInterval(function(){
+				s = false;
+				r = f(r, self[i], i, self);
+				if(s || ++i == self.length){
+					clearInterval(id);
+					if(typeof a[2] == 'function') a[2]();
+				}
+			}, t || 1);
 		},
 		reverse:function(){
 			var i, j, k, l;
@@ -136,23 +168,38 @@
 					return (new Function(p, 'return (' + v + ');')).apply(null, arg);
 				};
 			return function(v){
-				var s = this, a, i, j;
-				if(s.indexOf('.') != NONE) s = s.replace(r0, f0);
-				if(s.indexOf('@') != NONE) s = s.replace(r1, f1);
-				if(s.indexOf('$') != NONE){
-					param.length = arg.length = 1;
-					a = arguments, i = 0, j = a.length;
-					while(i < j) param[param.length] = a[i++], arg[arg.length] = a[i++];
-					p = param.join(',');
-					s = s.replace(r2, f2);
-				}
+				var s = this, a, i, j, k, c = 10;
+				do{
+					k = 0;
+					if(s.indexOf('.{') != NONE) s = s.replace(r0, f0), k = 1;
+					if(s.indexOf('@{') != NONE) s = s.replace(r1, f1), k = 1;
+					if(s.indexOf('${') != NONE){
+						param.length = arg.length = 1, a = arguments, i = 0, j = a.length;
+						while(i < j) param[param.length] = a[i++], arg[arg.length] = a[i++];
+						p = param.join(','), s = s.replace(r2, f2), k = 1;
+					}
+				}while(k && c--);
 				return s;
 			};
 		})(),
 		trim:(function(){
 			var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
 			return function(){return this.replace(trim, '');};
-		})()
+		})(),
+		cut:function(l, r){
+			var v = this;
+			if(l) v = v.substr(l);
+			if(r) v = v.substr(0, v.length - r);
+			return v;
+		},
+		right:function(v){return this.substr(this.length - v);},
+		startsWith:function(v){return this.substr(0, v.length) == v;},
+		endsWith:function(v){return this.substr(this.length - v.length) == v;},
+		repeat:function(v){
+			var r = '', key = this;
+			while(v--) r += key;
+			return r;
+		}
 	}) if(o.hasOwnProperty(k)) if(!String.prototype[k]) String.prototype.bsImmutable(k, o[k]);
 	//Date.prototype
 	if(!Date.now) Date.bsImmutable('now', function(){return +new Date;});

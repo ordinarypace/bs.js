@@ -1,7 +1,7 @@
-bs.css('.tmpl,[' + ns + 'tmpl]{display:none}'),
+bs.css('.tmpl,.bsMarker[' + ns + 'tmpl]{display:none}'),
 bs.bsImmutable(
 'render', (function(){
-	var TMPL = {}, frag, elLoop, param, update, currData, Tmpl;
+	var TMPL = {}, frag, elLoop, param, update, currData, Tmpl, T = 'top,body,bottom'.split(',');
 	frag = (function(){
 		var pool = [];
 		return function(){
@@ -18,33 +18,58 @@ bs.bsImmutable(
 		}while(stack.length && (el = stack[--stack.length]));
 	};
 	currData = (function(){
-		var stack = [];
-		return function(curr, i){
-			var hash, s, k, l;
-			s = curr[i];
-			if(!s)return;
-			stack.length = 0;
-			stack[0] = s;
+		var stack = [], c = 'INFO,LIST,SUP,INDEX,@hash,clone'.split(','), clone = function(){
+			var a = arguments, i, obj;
+			if(a.length){
+				i = a.length, obj = {};
+				while(i--) obj[a[i]] = this[a[i]];
+			}else{
+				i = c.length, obj = Object.assign({}, this);
+				while(i--) delete obj[c[i]];
+			}
+			return obj;
+		}, toJSON = function(){
+			var r = Object.assign({}, this), k;
+			k = c.length;
+			while(k--) delete r[c[k]];
+			return r;
+		};
+		return function(prevData, curr, i){
+			var s = curr[i], k, l;
+			if(!s) return;
+			templateData = s;/*
+			stack.length = 0, stack[0] = templateData = s;
 			do{
 				if(s && typeof s == 'object'){
-					delete s['@hash'];
+					k = c.length;
+					while(k--) delete s[c[k]];
 					if(s.splice){
 						for(k = 0, l = s.length; k < l; k++) if(s[k] && typeof s[k] == 'object') stack[stack.length] = s[k];
 					}else{
 						for(k in s) if(s[k] && typeof s[k] == 'object' && s.hasOwnProperty(k)) stack[stack.length] = s[k];
 					}
 				}
-			}while(s = stack.pop());
-			delete curr[i]['@hash'];
-			hash = JSON.stringify(templateData = curr[i]);
-			templateData['@hash'] = hash, templateData['@idx'] = i;
-			return hash;
+			}while(s = stack.pop());*/
+			templateData['@hash'] = k = JSON.stringify(templateData);
+			templateData.INDEX = i;
+			templateData.INFO = curr[0].INFO, templateData.LIST = curr, templateData.SUP = prevData;
+			templateData.clone = clone;
+			templateData.toJSON = toJSON;
+			return k;
 		};
 	})();
 	param = (function(){
-		var defaultvm = function(m){return m;};
+		var defaultvm = function(m){return m;},
+			stack = [], uuid,
+			r0 = /\[@.$]{[^}]+\}/g, r1 = /~([0-9]+)~/g,
+			rf0 = function(_){return stack[uuid] = _, '~' + (uuid++) + '~';},
+			rf1 = function(_, v){return stack[v];},
+			mkBS = function(k){return function(){return bs(k);};},
+			mk$ = function(k){return function(){return (new Function('bs', 'return (' + k + ');'))(bs);};},
+			param = [],
+			primitive = {'true':true, 'false':false, 'null':null};
 		return function(el){
-			var p, v, i;
+			var p, v, i, j, k;
 			if(p = el.bsParam, p === undefined){
 				p = el.getAttribute(ns + 's');
 				if(p) el.removeAttribute(ns + 's'), p = p.split(',');
@@ -54,35 +79,57 @@ bs.bsImmutable(
 					if(p.view = el.getAttribute(ns + 'view')) el.removeAttribute(ns + 'view');
 					else return err('param', 'view');
 					i = v.indexOf('(');
-					if(i == NONE) p.vm = defaultvm, p.m = v;
-					else p.vm = bs(v.substring(0, i)), p.m = v.substring(i + 1, v.length - 1);
+					if(i == NONE) p.vm = defaultvm, k = v.indexOf('{') == NONE ? '@{' + v + '}' : v;
+					else{
+						p.vm = bs(v.substring(0, i));
+						k = v.substring(i + 1, v.length - 1).trim();
+					}
+					if(k){
+						stack.length = uuid = 0;
+						k = k.replace(r0, rf0).split(','), i = k.length;
+						while(i--){
+							j = k[i];
+							if(j.indexOf('~') != NONE) j = j.replace(r1, rf1);
+							switch(j.substr(0, 2)){
+							case'.{':k[i] = mkBS('.' + j.substring(2, j.length - 1));break;
+							case'@{':k[i] = mkBS(j.substring(2, j.length - 1));break;
+							case'${':k[i] = mk$(j.substring(2, j.length - 1));break;
+							default:
+								if(j in primitive) k[i] = primitive[j];
+								else if(j.isNumber()) k[i] = parseFloat(j);
+								else if(
+									(j.charAt(0) == '[' && j.charAt(j.length - 1) == ']') ||
+									(j.charAt(0) == '{' && j.charAt(j.length - 1) == '}')
+								) k[i] = JSON.parse(j);
+							}
+						}
+						p.m = function(){
+							var i = k.length;
+							param.length = 0;
+							while(i--) param[i] = typeof k[i] == 'function' ? k[i]() : k[i];
+							return param;
+						};
+					}
 				}
 				el.bsParam = p || false;
 			}
 			return p;
 		};
 	})();
-	update = function(el, param, isNew){
-		var tmpl, prevData, curr, prev, hash, p, el0, el1, m, i, j;
+	update = renderUpdate = function(el, param, isNew){
+		var tmpl, prevData, curr, prev, hash, p, el0, el1, i, j;
 		if(param.length) domS(el, param);
 		if(param.vm){
 			if(param.view != '*') tmpl = TMPL[param.view];
-			prevData = templateData;
-			if(m = param.m){
-				switch(m.substr(0, 2)){
-				case'.{':m = bs('$' + m.substring(2, m.length - 1)); break;
-				case'@{':m = bs(m.substring(2, m.length - 1)); break;
-				default:m = bs(param.m.ex());
-				}
-				curr = param.vm(m);
-			}else curr = param.vm();
-			if(!(curr instanceof Array)) curr = [curr];
 			if(prev = el.bsPrevData || 0, !prev) el.innerHTML = '';
+			curr = param.vm.apply(null, param.m ? param.m() : null);
+			if(!(curr instanceof Array)) curr = [curr];
+			prevData = templateData;
 			templateData = curr;
-			if(tmpl) tmpl.update(el, curr, prev, isNew);
+			if(tmpl) tmpl.update(el, curr, prevData, prev, isNew);
 			else{
-				for(i = 0, j = curr.length; i < j; i++){
-					hash = currData(curr, i);
+				for(i = curr[0] && curr[0].INFO ? 1 : 0, j = curr.length; i < j; i++){
+					hash = currData(prevData, curr, i);
 					el0 = TMPL[templateData['@tmpl']].body.pop();
 					if(p = prev[i], !p) el.appendChild(el0);
 					else if(p != hash){
@@ -101,9 +148,9 @@ bs.bsImmutable(
 					}while(el0 = el1);
 				}
 			}
-			if(m = el.bsPrevData, !m) el.bsPrevData = m = [];
-			m.length = i = curr.length;
-			while(i--) m[i] = curr[i]['@hash'];
+			if(j = el.bsPrevData, !j) el.bsPrevData = j = [];
+			j.length = i = curr.length;
+			while(i--) j[i] = curr[i]['@hash'];
 			templateData = prevData;
 		}
 	};
@@ -139,9 +186,10 @@ bs.bsImmutable(
 					var p = param(el);
 					if(p) els.push(new Idom(el, p));
 				},
-				Role = function(tmpl, role, root){
+				Role = function(tmpl, role, root, drop){
 					this.tmpl = tmpl, this.role = role, this.root = root;
 					this.els = [], this.pool = [];
+					this.drop = drop;
 				}, fn = Role.prototype;
 			fn.init = function(){elLoop(this.root, loop, this.els);};
 			fn.drain = function(el){this.pool.push(el);};
@@ -159,11 +207,12 @@ bs.bsImmutable(
 				var els = this.els, i = els.length, g;
 				while(i--) els[i].render(el);
 				if(g = el.bsGroup, !g) el.bsGroup = g = {};
-				i = 'header,footer'.indexOf(this.role) == NONE && '@idx' in templateData;
+				i = 'header,footer'.indexOf(this.role) == NONE && 'INDEX' in templateData;
+				g.record = templateData;
 				el.setAttribute(ns + 'group',
 					(g.tmpl = this.tmpl) + '|' + 
 					(g.role = this.role) + 
-					(i ? '|' + (g.idx = templateData['@idx']) : '')
+					(i ? '|' + (g.index = i ? templateData.INDEX : -1) : '')
 				);
 			};
 			return Role;
@@ -171,12 +220,16 @@ bs.bsImmutable(
 		return (function(){
 			var ROLE = 'footer,bottom,body,top,header'.split(','),
 				LOOP = 'bottom,body,top'.split(','),
+				DROP = 'first,last,odd,even'.split(','),
 				Tmpl = function(tmpl){this.tmpl = tmpl;},
 				fn = Tmpl.prototype;
 			fn.role = function(el){
-				var role = el.getAttribute(ns + 'role') || 'body', r;
-				r = this[role] = new Role(this.tmpl, role, el);
+				var role = el.getAttribute(ns + 'role') || 'body', drop, d, i, r;
+				drop = el.getAttribute(ns + 'drop') || '', d = {}, i = DROP.length;
+				while(i--) d[DROP[i]] = drop.indexOf(DROP[i]) != NONE;
+				r = this[role] = new Role(this.tmpl, role, el, d);
 				el.parentNode.removeChild(el);
+				el.removeAttribute(ns + 'drop');
 				el.removeAttribute(ns + 'role');
 				el.removeAttribute(ns + 'tmpl');
 				domS(el, 'class-', 'tmpl');
@@ -186,18 +239,21 @@ bs.bsImmutable(
 				while(i--) if(this[ROLE[i]]) this[ROLE[i]].init();
 			};
 			fn.drain = function(el){this[el.bsGroup.role].drain(el);};
-			fn.update = function(el, curr, prev, isNew){
-				var target, footer, hash, role, p, isSame, isFrag, f, t, i, j, k;
+			fn.update = function(el, curr, prevData, prev, isNew){
+				var target, footer, hash, role, p, isSame, isFrag, f, t, i, j, k, first, isOdd, drop;
 				f = frag();
 				if(prev){
 					target = el.firstElementChild;
 					if(this.header) this.header.update(target), target = target.nextSibling;
 					if(this.footer && prev) el.removeChild(footer = el.lastElementChild);
 				}else if(this.header) f.appendChild(this.header.pop()), isFrag = true;
-				for(i = 0, j = curr.length; i < j; i++){
-					p = prev[i], hash = currData(curr, i), k = 3;
+				
+				for(isOdd = true, first = i = curr[0] && curr[0].INFO ? 1 : 0, j = curr.length; i < j; i++, isOdd = !isOdd){
+					p = prev[i], hash = currData(prevData, curr, i), k = 3;
 					if(p) isSame = p == hash;
 					while(k--) if(role = this[LOOP[k]]){
+						drop = role.drop;
+						if((i == first && drop.first) || (i == j - 1 && drop.last) || (isOdd && drop.odd) || (!isOdd && drop.even)) continue;
 						if(p){
 							if(isNew || !isSame) role.update(target);
 							target = target.nextSibling;
@@ -226,6 +282,30 @@ bs.bsImmutable(
 			return Tmpl;
 		})();
 	})();
+	bs('VM', {
+		range:(function(){
+			var r = [];
+			return function(s, e){
+				var a = arguments, i, j = a.length, v;
+				r.length = 0;
+				while(s <= e){
+					v = {INDEX:s++}, i = 2;
+					while(i < j) v[a[i++]] = a[i++];
+					r[r.length] = v;
+				}
+				return r;
+			};
+		})(),
+		item:(function(){
+			var r = [];
+			return function(){
+				var a = arguments, i = 0, j = a.length, v;
+				r.length = 0;
+				while(i < j) r[r.length] = {INDEX:i, item:a[i]}, i++;
+				return r;	
+			};
+		})()
+	});
 	return (function(){
 		var views = {}, isScaned = false, c = 0,
 			loop = function(el, view){
@@ -235,16 +315,30 @@ bs.bsImmutable(
 				}while(p = p.parentNode);
 				if(c) console.log(el);
 				if(p = el.bsParam || param(el)) view.push(el, p);
+			},
+			scan = function(el){
+				var key, i;
+				if(typeof el == STR) el = docId(el);
+				if(el.bsScaned) return;
+				key = [];
+				elLoop(el, function(el){
+					var k = el.getAttribute(ns + 'tmpl');
+					if(k){
+						key[key.length] = k;
+						if(!TMPL[k]) TMPL[k] = new Tmpl(k);
+						TMPL[k].role(el);
+					}
+				});
+				i = key.length;
+				while(i--) TMPL[key[i]].init();
+				el.bsScaned = true;
 			};
+		bs.bsImmutable('scan', scan);
 		return function(el, isNew){
 			var view, i, j;
 			if(!isScaned){
 				isScaned = true;
-				elLoop(doc.body, function(el){
-					var k = el.getAttribute(ns + 'tmpl');
-					if(k) (TMPL[k] || (TMPL[k] = new Tmpl(k))).role(el);
-				});
-				for(i in TMPL) if(TMPL.hasOwnProperty(i)) TMPL[i].init();
+				scan(doc.body);
 			};
 			el = typeof el == STR ? el = docId(el) : el || doc.body;
 			if(view = views[el.bsId], !view){

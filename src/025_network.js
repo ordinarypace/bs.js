@@ -111,7 +111,7 @@ http = (function(){
 	});
 	return function http(method, end, U, arg){
 		var param, cnt, r, rsaurl, rsaTarget,
-			urlCache, crossCK, body, i, j, k, v, u;
+			urlCache, crossCK, body, isJsonBody, i, j, k, v, u;
 		if(!end) return err(5007); //sync disable
 		xAttr.length = head.length = head.crossKey = send.length = 0,
 		j = arg.length, U = U.trim();
@@ -147,15 +147,20 @@ http = (function(){
 				case'@cookie':crossCK = encodeURIComponent(v); break;
 				case'@withCredentials':xAttr[xAttr.length] = 'WithCredentials', xAttr[xAttr.length] = v; break;
 				case'@urlCache':urlCache = v, head.push('Cache-Control', 'max-age=86400'); break;
+				case'json':
+					if(v) body = v, isJsonBody = 1;
+					break;
 				default:
 					if(k.charAt(0) === '@') head.push(k.substr(1), v);
-					else send.push(k, v);
+					else if(!isJsonBody) send.push(k, v);
 				}
 			}
-			if(i = 0, j = send.length, body instanceof FormData) while(i < j) console.log(send[i], send[i+1]), body.append(send[i++], send[i++]);
-			else{
-				while(i < j) body += encodeURIComponent(send[i++]) + '=' + encodeURIComponent(send[i++]) + '&';
-				body = body.substr(0, body.length - 1);
+			if(!isJsonBody){
+				if(i = 0, j = send.length, body instanceof FormData) while(i < j) body.append(send[i++], send[i++]);
+				else{
+					while(i < j) body += encodeURIComponent(send[i++]) + '=' + encodeURIComponent(send[i++]) + '&';
+					body = body.substr(0, body.length - 1);
+				}
 			}
 		}
 		//URL처리

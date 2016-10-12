@@ -102,7 +102,8 @@ var ev,	attach = {}, //IE 중복 리스너
 				return {}.bsImmutable(
 					'el',function(){return init().el;},
 					'S', function(){return domS(init().el, arguments);},
-					'cursor', function(){return parseFloat(init().el.getAttribute(ns + 'group').split('|')[2]);},
+					'info', function(){return init().el.bsGroup || {};},
+					'record', function(){return init().el.bsGroup.record || {};},
 					'data', function(k, v){
 						var el = init().el;
 						if(v === null) return el.removeAttribute('data-'+k);
@@ -130,6 +131,14 @@ var ev,	attach = {}, //IE 중복 리스너
 					},
 					'parent', function(){
 						ev.groupTarget = init().el.parentNode;
+						return this;
+					},
+					'prev', function(){
+						ev.groupTarget = init().el.previousSibling;
+						return this;
+					},
+					'next', function(){
+						ev.groupTarget = init().el.nextSibling;
 						return this;
 					},
 					'child', function(k){
@@ -230,9 +239,9 @@ var ev,	attach = {}, //IE 중복 리스너
 			el = e.target || e.srcElement, type = e.type;
 			if(!el) return console.log('no e.target,e.srcElement');
 			if(el == W || el === doc){
-				if(listener = sys.sysEv[type]){
+				if(k = sys.sysEv[type]){
 					ev.event = e, ev.target = el, ev.type = type;
-					for(i = 0, j = listener.length; i < j; i++) if(listener[i].call(W, ev)) break;
+					for(i = 0, j = k.length; i < j; i++) if(k[i].call(W, ev)) break;
 				}
 			}else do{
 				a = el.attributes, type0 = 0;//이벤트에 해당되는 키확인(가상키포함) : data-click, data-down(가상)
@@ -250,6 +259,7 @@ var ev,	attach = {}, //IE 중복 리스너
 	})();
 bs.bsImmutable(
 'dom2e', function(el, type){
+	if(typeof el == 'string') el = bs.getId(el);
 	ev.groupTarget = ev.target = el,
 	ev.type = type,
 	ev.__group__ = domGroup(el),

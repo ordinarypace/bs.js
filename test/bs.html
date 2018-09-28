@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>bs6-bs</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0;font-family:"D2Coding", Arial, "monospace"}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+<script src="//www.bsidesoft.com/api/js/6/build/test.php"></script>
+<script src="//www.bsidesoft.com/api/js/test/2/index.js"></script>
+<script>
+bsTest.run('bs', null,
+function(flow){
+	flow.ok("여러 단일키 설정 bs('a', 3, 'b', 5) - a + b");
+	bs('a', 3, 'b', 5);
+	return bs('a') + bs('b');
+}, 8,
+function(flow){
+	flow.ok("@{}타입처리 bs('@{a}')");
+	return bs('@{a}') + bs('@{b}');
+}, 8,
+function(flow){
+	flow.ok("참조키 bs('c', '@{a}') - c");
+	bs('c', '@{a}');
+	return bs('c');
+}, 3,
+function(flow){
+	flow.ok("하위 탐색 bs('d', {a:{b:5}}') - d.a.b");
+	bs('d', {a:{b:5}});
+	return bs('d.a.b');
+}, 5,
+function(flow){
+	flow.ok("참조 하위 탐색 bs('d', {a:{b:5}}', 'e', '@{d.a}') - e.b");
+	bs('e', '@{d.a}');
+	return bs('e.b');
+}, 5,
+function(flow){
+	flow.ok("lazy bs('f', bs.lazy(function(){return 3;})) - f");
+	bs('f', bs.lazy(function(){return 3;}));
+	return bs('f');
+}, 3
+);
+bsTest.run('lock', null,
+function(flow){
+	flow.ok("locked");
+	var f1 = bs.lock('lock1', function(a, b){return a + b;});
+  var f2 = bs.lock('lock1', function(a, b){return bs.unlock('lock1'), a - b;});
+  flow.S('f2', f2);
+	return '' + f1(1, 2) + f2();
+}, '3undefined',
+function(flow){
+	flow.ok("unlock");
+	bs.unlock('lock1');
+	return flow.S('f2')(5, 2);
+}, 3,
+function(flow){
+  setTimeout(function(){flow.run();}, 20);
+  flow.hold();
+  flow.ok("timelock start");
+  var f3 = bs.lock('lock1', function(a, b){return a + b;}, 1);
+  return '' + f3(1, 2) + flow.S('f2')(5, 2);
+}, '3undefined',
+function(flow){
+  flow.ok("timelock end");
+  return flow.S('f2')(5, 2);
+}, 3,
+function(flow){
+  setTimeout(function(){flow.run();}, 20);
+  flow.hold();
+  flow.ok("timeunlock start");
+  var f3 = bs.lock('lock1', function(a, b){return bs.unlock('lock1', 1), a + b;});
+  return '' + f3(1, 2) + flow.S('f2')(5, 2);
+}, '3undefined',
+function(flow){
+  flow.ok("timeunlock end");
+  return flow.S('f2')(5, 2);
+}, 3
+);
+</script>
+</body>
+</html>

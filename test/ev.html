@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>bs6-bs</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0;font-family:"D2Coding", Arial, "monospace"}
+#doc{margin:10px}
+</style>
+</head>
+<body>
+  <div id="t0" data-bs="{onclick:'click0', color:'@{c0}'}">click0</div>
+  <div id="t1" data-bs="{onclick:{k:'click1'}, color:'@{c1}'}">click1</div>
+  <div id="t2" data-bs="{onclick:{k:'click2',l:'t2'}, color:'@{c2}'}">click2</div>
+  <div id="t2_0" data-bs="{onclick:{k:'click2_0'}, color:'@{c2}'}">click2-unlock</div>
+  <div id="t3" data-bs="{onclick:{k:'click3',l:'t3', lt:2000}, color:'@{c3}'}">click3</div>
+  <div id="t4" data-bs="{onclick:{k:'click4'}, ondown:'down', onmove:{k:'move4', t:110}, background:'@{c4}'}" style="width:300px;height:300px;border:1px solid #000;position:absolute;right:0;top:0">move4</div>
+<script src="//www.bsidesoft.com/api/js/6/build/test.php"></script>
+<script src="//www.bsidesoft.com/api/js/test/2/index.js"></script>
+<script>
+bs.scan();
+var empty = function(){};
+bs('move4', empty, 'down', empty);
+bsTest.run('ev', null,
+function(flow){
+	flow.ok("문자열 0");
+  flow.hold();
+  
+  bs('c0', 'red', 'click0', function(e){
+    flow.S('e', e);
+    e.target.removeAttribute('onclick');
+    bs('click0', empty, 'c0', 'black');
+    flow.run();
+  });
+  bs.render();
+
+	return 0;
+}, 0,
+function(flow){
+	flow.ok("문자열 1");
+  var e = flow.S('e');
+  var pos = e.pos();
+  flow.hold();
+  bs('c1', 'red', 'click1', function(e){
+    flow.S('e', e);
+    e.target.removeAttribute('onclick');
+    bs('click1', empty, 'c1', 'black');
+    flow.run();
+  });
+  bs.render();
+	return [e.type, e.target.id].join(':');
+}, 'click:t0',
+function(flow){
+  flow.hold();
+	flow.ok("객체기본");
+  var e = flow.S('e');
+  var pos = e.pos();
+  flow.hold();
+  
+  var cnt = 0, t;
+  bs('c2', 'red', 'click2', function(e){
+    if(cnt++ == 0){
+      t = e.target;
+      e.target.innerHTML = 'locked!'
+      return;
+    }
+    flow.S('e', e);
+    e.target.removeAttribute('onclick');
+    bs('click2', empty, 'click2_0', empty, 'c2', 'black');
+    flow.run();
+  }, 'click2_0', function(e){
+    bs.unlock('t2');
+    t.innerHTML = 'unlocked!'
+  });
+  bs.render();
+  
+	return [e.type, e.target.id].join(':');
+}, 'click:t1',
+function(flow){
+	flow.ok("lock");
+  var e = flow.S('e');
+  var pos = e.pos();
+  flow.hold();
+  var cnt = 0, id, c;
+  bs('c3', 'red', 'click3', function(e){
+    if(cnt++ == 0){
+      e.target.innerHTML = 'auto unlocked after 1000ms';
+      c = Date.now();
+      var id = setInterval(function(){
+        var i = 2000 - (Date.now() - c);
+        if(i > 0) e.target.innerHTML = 'auto unlock after ' + i + 'ms';
+        else{
+          clearInterval(id);
+          e.target.innerHTML = 'auto unlocked!';
+        } 
+      }, 16);
+      return;
+    } 
+    flow.S('e', e);
+    e.target.removeAttribute('onclick');
+    flow.run();
+  });
+  bs.render();
+  
+	return [e.type, e.target.id].join(':');
+}, 'click:t2',
+function(flow){
+	flow.ok("auto unlock");
+  var e = flow.S('e');
+  var pos = e.pos();
+  
+	return [e.type, e.target.id].join(':');
+}, 'click:t3'
+);
+  //{onclick:{k:'click4'}, onmove:{k:'move4', t:100}}
+bsTest.run('ev-move', null,
+function(flow){
+	flow.ok("move 0");
+  bs('c4', 'white', 'click4', function(e){
+    flow.S('e', e);
+    e.target.removeAttribute('onclick');
+    e.target.innerHTML = 'move it!'
+    const a = [];
+    bs('click4', empty, 'c4', '#ffe', 'move4', e=>{
+      e.pos();
+      a.push({});
+    });
+    bs.render();
+    setTimeout(function(){
+      bs('c4', '#fff', 'move4', empty);
+      bs.render();
+      flow.S('a', a);
+      flow.run();
+    }, 2000);
+  });
+  bs.render();
+  flow.hold();
+	return 0;
+}, 0,
+function(flow){
+  var a = flow.S('a');
+	flow.ok("move 1:" + a.length);
+  flow.fail("move 1:" + a.length);
+	return a.length <= 20 ;
+}, true
+)
+</script>
+</body>
+</html>

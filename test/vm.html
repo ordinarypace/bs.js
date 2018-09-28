@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>bs6-bs</title>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"/>
+<style>
+body{margin:0;padding:0;font-family:"D2Coding", Arial, "monospace"}
+#doc{margin:10px}
+</style>
+</head>
+<body data-bs="{'@a':3}">
+  <div id="t0" data-bs="{'@a':3, html:'t0'}"></div>
+  <div id="t1" data-bs="{k:'k0'}">
+    <div id="t1_0" data-bs="{'@a':3, 'html':'t1_0'}"></div>
+    <div id="t1_1" data-bs="{'@a':'@{t1_1}', 'html':'@{t1_1}'}"></div>
+  </div>
+  <div id="t2" data-bs="{'@a':'@{t2}', 'html':'@{t2}'}"></div>
+  <div data-tmpl="{k:'c,d', role:'body', nth:'+i % 3 == 2'}"></div>
+  <nav data-tmpl="{k:'e', role:'header'}"></nav>
+  <nav data-tmpl="{k:'e', role:'header'}"></nav>
+  <div data-tmpl="{k:'e'}"></div>
+  <p data-tmpl="{k:'e'}"></p>
+  <footer data-tmpl="{k:'e', role:'footer'}"></footer>
+  <footer data-tmpl="{k:'e', role:'footer'}"></footer>
+  <p data-tmpl="{k:'e', role:'empty'}"></p>
+  <p data-tmpl="{k:'e', role:'empty'}"></p>
+  
+  
+  <section id="v0" data-bs="{k:'v0', d:'vm0', a:[1,2,3], t:'t0'}">
+    <div data-tmpl="{k:'t0'}" data-bs="{'@a':'.{title}'}">
+      <p data-bs="{html:'.{item}'}"></p>
+    </div>
+  </section>
+  <section id="v1" data-bs="{k:'v1', d:'vm1', t:'t1'}">
+    <p data-tmpl="{k:'t1', nth:'+i%2'}" style="background:#fee" data-bs="{'html':'.{title}'}"></p>
+    <div data-tmpl="{k:'t1', nth:'+i%2 == 0'}" style="background:#ffe" data-bs="{'html':'.{title}'}"></div>
+    <section data-tmpl="{k:'t1_1'}" style="background:#f66;color:#fff" data-bs="{'html':'.{title}'}"></section>
+  </section>
+  <section id="v2" data-bs="{k:'v2', d:'vm2', t:'t2'}">
+    <nav data-tmpl="{k:'t2', role:'header'}" style="background:#fee" data-bs="{'html':'header'}"></nav>
+    <p data-tmpl="{k:'t2', nth:'+i%2'}" style="background:#fef" data-bs="{'html':'.{title}'}"></p>
+    <div data-tmpl="{k:'t2', nth:'+i%2 == 0'}" style="background:#efe" data-bs="{'html':'.{title}'}"></div>
+    <footer data-tmpl="{k:'t2', role:'footer'}" style="background:#ffe" data-bs="{'html':'footer'}"></footer>
+  </section>
+  <section id="v3" data-bs="{k:'v3', d:'vm3', t:'t3'}">
+    <div data-tmpl="{k:'t3', d:'v3t30'}" style="background:#ffe" data-bs="{'html':'.{title}'}"></div>
+  </section>
+<script src="//www.bsidesoft.com/api/js/6/build/test.php"></script>
+<script src="//www.bsidesoft.com/api/js/test/2/index.js"></script>
+<script>
+bs.scan();
+bsTest.run('vm', null,
+function(flow){
+	flow.ok("body 속성반영");
+	return document.body.getAttribute('a');
+}, '3',
+function(flow){
+	flow.ok("child 속성반영");
+	return document.getElementById('t0').getAttribute('a') + ":" + document.getElementById('t1_0').getAttribute('a');
+}, '3:3',
+function(flow){
+	flow.ok("vm등록");
+	return bs.vm('k0').k + ":" + bs.vm('k0').vms.len + ":" + bs.vm('v0').k + ":" + bs.vm('v0').vms.len;
+}, 'k0:2:v0:0',
+function(flow){
+	flow.ok("@{}렌더");
+  bs('t1_1', 1, 't2', 3);
+  bs.render();
+	return document.getElementById('t1_1').getAttribute('a') + ":" + document.getElementById('t2').getAttribute('a');
+}, '1:3',
+function(flow){
+	flow.ok("서브렌더");
+  bs('t1_1', 2, 't2', 5);
+  bs.render('k0');
+	return document.getElementById('t1_1').getAttribute('a') + ":" + document.getElementById('t2').getAttribute('a');
+}, '2:3',
+function(flow){
+  flow.ok("tmpl 수동등록");
+  bs.tmpl('<div></div>', 'a,b', 'body', '+i % 3 == 2');
+  var a = bs.TMPL('a').body, b = bs.TMPL('b').body;
+  return a.len +":" + b.len + ":" + a[0].nth.p.length +":" + a[0].nth.p[0](2, 0);
+}, "1:1:1:true",
+function(flow){
+  flow.ok("tmpl 자동등록");
+  var a = bs.TMPL('c').body, b = bs.TMPL('d').body;
+  return a.len +":" + b.len + ":" + a[0].nth.p.length +":" + a[0].nth.p[0](2, 0);
+}, "1:1:1:true",
+function(flow){
+  flow.ok("tmpl 다수등록1");
+  var e = bs.TMPL('e');
+  return e.header.len +":" + e.footer.len + ":" + e.body.len +":" + e.empty.len;
+}, "2:2:2:2",
+function(flow){
+  flow.ok("tmpl 다수등록2");
+  var e = bs.TMPL('e');
+  return e.header[0].el.tagName +":" + e.header[1].el.tagName + ":" + 
+    e.body[0].el.tagName +":" + e.body[1].el.tagName + ":" + 
+    e.footer[0].el.tagName +":" + e.footer[1].el.tagName + ":" + 
+    e.empty[0].el.tagName +":" + e.empty[1].el.tagName;
+}, "NAV:NAV:DIV:P:FOOTER:FOOTER:P:P",
+function(flow){
+  flow.ok("tmpl render1");
+  var val;
+  bs('vm0', function(a,b,c){
+    val = a + b + c;
+    return [{title:'a', item:'p1'}, {title:'b', item:'p2'}];
+  });
+  bs.render('v0');
+  var v0 = document.getElementById('v0').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling;
+  return [val, a.tagName, b.tagName, a.getAttribute('a'), b.getAttribute('a'),
+    a.firstElementChild.innerHTML, b.firstElementChild.innerHTML
+  ].join(':');
+}, '6:DIV:DIV:a:b:p1:p2',
+function(flow){
+  flow.ok("tmpl render2");
+  var val;
+  bs('vm0', function(a,b,c){
+    val = a + b + c;
+    return [{title:'c', item:'p3'}, {title:'d', item:'p4'}];
+  });
+  bs.render('v0');
+  var v0 = document.getElementById('v0').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling;
+  return [val, a.tagName, b.tagName, a.getAttribute('a'), b.getAttribute('a'),
+    a.firstElementChild.innerHTML, b.firstElementChild.innerHTML
+  ].join(':');
+}, '6:DIV:DIV:c:d:p3:p4',
+function(flow){
+  flow.ok("tmpl nth 1");
+  bs('vm1', function(){
+    return [{title:'aa'}, {title:'bb'}];
+  });
+  bs.render('v1');
+  var v0 = document.getElementById('v1').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling;
+  return [a.tagName, b.tagName, a.innerHTML, b.innerHTML
+  ].join(':');
+}, 'DIV:P:aa:bb',
+function(flow){
+  flow.ok("tmpl nth 2");
+  bs('vm1', function(){
+    return [{title:'cc'}, {title:'dd'}, {title:'ee'}, {title:'ff'}];
+  });
+  bs.render('v1');
+  var v0 = document.getElementById('v1').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
+  return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
+  ].join(':');
+}, 'DIV:P:DIV:P:cc:dd:ee:ff',
+function(flow){
+  flow.ok("tmpl nth 3");
+  bs('vm1', function(){
+    return [{title:'gg'}, {title:'hh'}];
+  });
+  bs.render('v1');
+  var v0 = document.getElementById('v1').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling;
+  return [a.tagName, b.tagName, a.innerHTML, b.innerHTML
+  ].join(':');
+}, 'DIV:P:gg:hh',
+function(flow){
+  flow.ok("tmpl nth 4");
+  bs('vm1', function(){
+    return [{title:'cc'}, {title:'dd'}, {title:'ee'}, {title:'ff'}];
+  });
+  bs.render('v1');
+  var v0 = document.getElementById('v1').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
+  return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
+  ].join(':');
+}, 'DIV:P:DIV:P:cc:dd:ee:ff',
+function(flow){
+  flow.ok("tmpl nth 5");
+  bs('vm1', function(){
+    return [{'@tmpl':'t1_1', title:'cc'}, {title:'dd'}, {'@tmpl':'t1_1', title:'ee'}, {title:'ff'}];
+  });
+  bs.render('v1');
+  var v0 = document.getElementById('v1').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
+  return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
+  ].join(':');
+}, 'SECTION:P:SECTION:P:cc:dd:ee:ff',
+function(flow){
+  flow.ok("tmpl record vm");
+  bs('vm3', function(){
+    return [{title:'cc'}, {title:'dd'}, {title:'ee'}, {title:'ff'}];
+  },
+  'v3t30', function(vm){
+    return {title:vm.title + '*'};
+  });
+  bs.render('v3');
+  var v0 = document.getElementById('v3').firstElementChild;
+  var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
+  return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
+  ].join(':');
+}, 'DIV:DIV:DIV:DIV:cc*:dd*:ee*:ff*',
+function(flow){
+  flow.ok("tmpl header footer");
+  bs('vm2', function(){
+    return [{title:'aa'}, {title:'bb'}, {title:'cc'}, {title:'dd'}];
+  });
+  bs.render('v2');
+  var v0 = document.getElementById('v2');
+  var a = v0.firstElementChild.firstElementChild, b = v0.lastElementChild.firstElementChild;
+  var b0 = v0.querySelector('.bs-tmpl-body').firstElementChild;
+  var b1 = b0.nextElementSibling, b2 = b1.nextElementSibling, b3 = b2.nextElementSibling;
+  return [a.tagName, b.tagName, a.innerHTML, b.innerHTML,
+          b0.tagName, b1.tagName, b2.tagName, b3.tagName,
+          b0.innerHTML, b1.innerHTML, b2.innerHTML, b3.innerHTML
+  ].join(':');
+}, 'NAV:FOOTER:header:footer:DIV:P:DIV:P:aa:bb:cc:dd'
+);
+</script>
+</body>
+</html>

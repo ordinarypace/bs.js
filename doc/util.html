@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>무제 문서</title>
+<script src="http://www.bsidesoft.com/api/js/5/build/test.php"></script>
+<script src="http://www.bsidesoft.com/api/js/doc/index.js"></script>
+</head>
+<body>
+<script>
+if(location.search.substr(1) == '') location.href = 'http://www.bsidesoft.com/api/js/5/doc/util.html?a=3&b=안녕';
+bst.globalize();
+b_runner(
+	bst(
+		b_def('util', 'bs.encode', 'encodeURIComponent의 단축버전.')
+			.statics(bs.encode, 
+				b_type(null, 'encoding된 문자열', false, 'string'),
+				b_type('str', 'encoding할 문자열', false, 'string')
+					.add('null을 보내면 "null"을 얻게 됨', false, null)
+			),
+		b_c(null, encodeURIComponent('안녕abc123@#$'), '안녕abc123@#$'),
+		b_c(null, encodeURIComponent(null), null)
+	),
+	bst(
+		b_def('util', 'bs.decode', 'decodeURIComponent의 단축버전.')
+			.statics(bs.decode, 
+				b_type(null, 'decoding된 문자열', false, 'string'),
+				b_type('str', 'decoding할 문자열', false, 'string')
+					.add('null을 보내면 "null"을 얻게 됨', false, null)
+			),
+		b_c(null, decodeURIComponent('%EC%95%88%EB%85%95abc123%40%23%24'), '%EC%95%88%EB%85%95abc123%40%23%24'),
+		b_c(null, decodeURIComponent(null), null)
+	)
+);
+b_runner(
+	bst(
+		b_def('util', 'bs.queryString', '주어진 문자열이나 location.search로 주어진 쿼리스트링을 파싱한 결과를 반환함.')
+			.statics(bs.queryString, 
+				b_type(null, '파싱된 결과가 키와 값으로 잡혀있는 오브젝트 반환.<br>__full 키에는 원본 쿼리스트링 문자열이 들어있음.', false, 'object'),
+				b_type('str', '파싱할 문자열. 값을 보내지 않으면 location.search가 사용됨.', true, 'string')
+			),
+		b_c(null, function(v){
+			if(v.a !== '3') return 'a값이 잘못됨:' + v.a;
+			if(v.b !== '안녕') return 'b값이 잘못됨:' + v.b;
+			if(v.__full !== 'a=3&b=' + bs.encode('안녕')) return '__full이 잘못됨' + v.__full;
+		}).sampleBefore('//인자를 보내지 않으면 location.search가 사용됨'),
+		b_c(null, function(v){
+			if(v.a !== '10') return 'a값이 잘못됨:' + v.a;
+			if(v.b !== '저녁') return 'b값이 잘못됨:' + v.b;
+			if(v.__full !== 'a=10&b=저녁') return '__full이 잘못됨' + v.__full;
+		}, 'a=10&b=저녁'
+		).sampleBefore('//직접 인자를 보내는 경우')
+	)
+);
+</script>
+</body>
+</html>

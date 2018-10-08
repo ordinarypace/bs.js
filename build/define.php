@@ -16,6 +16,7 @@ function _write($path, $v){
 }
 $src = array(
   10=>'util',
+  15=>'net',
 	20=>'dom',
   30=>'style',
   40=>'prop',
@@ -86,5 +87,5 @@ function rep1($v){
 }
 $i = 0;
 while($i++<100 && preg_match('/\$\{[^}]+\}/', $v) > 0) $v = preg_replace_callback('/\$\{[^}]+\}/', 'rep0', $v);
-$v = preg_replace_callback('/`[^`]*`/', 'rep1', $v);
+//$v = preg_replace_callback('/`[^`]*`/', 'rep1', $v);
 $v = preg_replace($reg, $rep, $v);

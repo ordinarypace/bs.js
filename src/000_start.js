@@ -19,27 +19,43 @@ push, v=>{this[this.plen++] = v;}
 );
 const LAZY = Object.freeze(O());
 let vmData;
-const app = O(), bs =()=>{
-  let a = arguments, t, i = 0, j = a.length, k, v, m, n;
-  while(i < j){
-    t = app, k = a[i++];
-    if(!k) return null;
-    if(k.indexOf('@{') == 0) k = k.substring(2, k.length - 1);
-    if(k == '.') return vmData;
-    if(k.indexOf('.{') == 0) k = k.substring(2, k.length - 1), t = vmData;
-    if(k.indexOf('.') != -1){
-      k = k.split('.'), m = 0, n = k.length - 1;
-      while(m < n){
-        t = t[k[m++]];
-        if(typeof t == 'string' && t.indexOf('@{') == 0) t = bs(t.substring(2, t.length - 1));
+const app = O(), bs =(()=>{
+  const ex0 = /[@.]\{[^}]+\}/g, ex1 = /^(?:[#@.]\{|\.$)/, ex2 = /`/g;
+  let isT;
+  try{
+    isT = (new Function('', 'return `a` === "a";'))();
+  }catch(e){}
+  return ()=>{
+    let a = arguments, t, i = 0, j = a.length, k, v, m, n;
+    while(i < j){
+      t = app, k = a[i++];
+      if(!k) return null;
+      if(k == '.') return vmData;
+      if(k.indexOf('#{') == 0){
+        k = k.substring(2, k.length - 1).replace(ex0, "bs('$&')");
+        if(!isT) k = k.replace(ex2, "'");
+        return (new Function('', 'return ' + k))();
       }
-      k = k[n];
+      if(k.indexOf('@{') == 0) k = k.substring(2, k.length - 1);
+      else if(k.indexOf('.{') == 0) k = k.substring(2, k.length - 1), t = vmData;
+      if(k.indexOf('.') != -1){
+        k = k.split('.'), m = 0, n = k.length - 1;
+        while(m < n){
+          t = t[k[m++]];
+          if(typeof t == 'string' && t.indexOf('@{') == 0) t = bs(t.substring(2, t.length - 1));
+        }
+        k = k[n];
+      }
+      if(i == j){
+        v = t[k];
+        if(typeof v == 'string' && ex1.test(v)) v = bs(v);
+        else if(v && v.is == LAZY) v = v.f();
+        return v;
+      }else v = a[i++], v === null ? delete t[k] : t[k] = v;
     }
-    if(i == j) return v = t[k], typeof v == 'string' && v.indexOf('@{') == 0 ? bs(v.substring(2, v.length - 1)) : v && v.is == LAZY ? v.f() : v;
-    else v = a[i++], v === null ? delete t[k] : t[k] = v;
-  }
-  return v;
-};
+    return v;
+  };
+})();
 bs.lazy = f=>O(LAZY, 'f', f);
 !()=>{
   const lock = O();
@@ -53,3 +69,20 @@ bs.lazy = f=>O(LAZY, 'f', f);
   };
   bs.unlock = (k, t)=>{t ? setTimeout(()=>{lock[k] = 0;}, t) : lock[k] = 0};
 }();
+const own = Object.prototype.hasOwnProperty;
+const VAL = v=>{
+  const st = O(LIST), r = O();
+  st[st.len++] = {c:r, k:0, v:v};
+  let c, i, t;
+  while(c = st[--st.len]){
+    if(!c.v || typeof c.v != 'object') c.c[c.k] = typeof v == 'string' && v[1] == '{' ? bs(c.v) : c.v;
+    else if(c.v instanceof Array){
+      c.c[c.k] = t = [], i = c.v.length;
+      while(i--) st[st.len++] = {c:t, k:i, v:c.v[i]};
+    }else{
+      c.c[c.k] = t = O();
+      for(i in c.v) if(own.call(v, i)) st[st.len++] = {c:t, k:i, v:c.v[i]};
+    }
+  }
+  return r[0];
+};

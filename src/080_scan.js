@@ -26,8 +26,7 @@ bs.scan = p=>{
       while(prev = prev.previousElementSibling) idx++;
       pos[pos.len++] = idx;
       el = el.parentNode;
-      vms = el == p ? r : el ? VMS[el.k] : 0;
-      if(vms){
+      if(vms = el == p ? r : el ? VMS[el.bsKey] : 0){
         vms = vms.vms || (vms.vms = O(LIST));
         vm.p = el, vm.pos = pos, vm.newEL(vm.el);
         vms[vms.len++] = vm;
@@ -38,9 +37,7 @@ bs.scan = p=>{
   return r;
 }
 bs.vm = k=>VMS[k || 'BODY'];
-bs.tmpl = (el, key, role, nth, emptyType)=>{
-  TMPL.$add(el, key, role, nth, emptyType);
-};
+bs.tmpl = (el, key, role, nth, emptyType)=>{TMPL.$add(el, key, role, nth, emptyType);};
 bs.TMPL = k=>TMPL[k];
 bs.render = k=>VMS[k || 'BODY'].render();
 /*end*/}();

@@ -52,10 +52,62 @@ body{margin:0;padding:0;font-family:"D2Coding", Arial, "monospace"}
   <section id="v3" data-bs="{k:'v3', d:'vm3', t:'t3'}">
     <div data-tmpl="{k:'t3', d:'v3t30'}" style="background:#ffe" data-bs="{'html':'.{title}'}"></div>
   </section>
+  <ul id="v4" data-bs="{k:'v4', d:'vm4', t:'t4'}">
+    <li data-tmpl="k:'t4'">
+      <div data-bs="html:'.{title}'"></div>
+      <ul data-bs="d:'vm4_1', t:'t4'"></ul>
+    </li>
+  </ul>
+  <ul data-bs="data:'t0data', tmpl:'t0data'">
+    <li data-tmpl="t0data" data-bs="data:'.{sub}', tmpl:'t1data'">
+      <div data-tmpl="t1data" data-bs="html:'#{.{PARENT.title} + ` > ` + .{title}}'"></div>
+    </li>
+  </ul>
+<table data-bs="d:'t2data', t:'t2data'">
+  <tr data-tmpl="t2data" data-bs="d:'.{td}', t:'t3data'">
+    <td data-tmpl="t3data" data-bs="html:'#{.{INFO}[.{IDX}] + ` : ` + .{v}}'"></td>
+  </tr>
+</table>
+<ul data-bs="d:'t4data', t:'t4data'">
+  <li data-tmpl="t4data" data-bs="html:'#{(.{IDX} + 1)+`/`+.{CNT} + ` - ` + .{title}}'"></li>
+</ul>
+  
 <script src="//www.bsidesoft.com/api/js/6/build/test.php"></script>
 <script src="//www.bsidesoft.com/api/js/test/2/index.js"></script>
 <script>
 bs.scan();
+(function(){
+  var info = {INFO:1, '0':'id', '1':'nick', '2':'email'};
+  bs('t2data', [
+    {td:[info, {v:'433'}, {v:'hika'}, {v:'hika@bsidesoft.com'}]},
+    {td:[info, {v:'765'}, {v:'summer'}, {v:'summer@bsidesoft.com'}]}
+  ]);
+})();
+bs('t4data', [{title:'apple'}, {title:'banana'}, {title:'orange'}]);
+bs(
+'t0data', [
+  {title:'item1', sub:[{title:'sub1'}, {title:'sub2'}, {title:'sub3'}]},
+  {title:'item2', sub:[{title:'sub1'}, {title:'sub2'}, {title:'sub3'}]}
+]
+);
+bs('vm4', function(){return [
+  {title:'menu1', sub:[
+    {title:'1-1', sub:[]},
+    {title:'1-2', sub:[
+      {title:'1-2-1', sub:[]},
+      {title:'1-2-2', sub:[]}
+    ]}
+  ]},
+  {title:'menu2', sub:[
+    {title:'2-1', sub:[]},
+    {title:'2-2', sub:[
+      {title:'2-2-1', sub:[]},
+      {title:'2-2-2', sub:[]}
+    ]}
+  ]}
+];}, 'vm4_1', function(){return bs('.{sub}');});
+  
+  
 bsTest.run('vm', null,
 function(flow){
 	flow.ok("body 속성반영");
@@ -113,7 +165,7 @@ function(flow){
     return [{title:'a', item:'p1'}, {title:'b', item:'p2'}];
   });
   bs.render('v0');
-  var v0 = document.getElementById('v0').firstElementChild;
+  var v0 = document.getElementById('v0');
   var a = v0.firstElementChild, b = a.nextElementSibling;
   return [val, a.tagName, b.tagName, a.getAttribute('a'), b.getAttribute('a'),
     a.firstElementChild.innerHTML, b.firstElementChild.innerHTML
@@ -127,7 +179,7 @@ function(flow){
     return [{title:'c', item:'p3'}, {title:'d', item:'p4'}];
   });
   bs.render('v0');
-  var v0 = document.getElementById('v0').firstElementChild;
+  var v0 = document.getElementById('v0');
   var a = v0.firstElementChild, b = a.nextElementSibling;
   return [val, a.tagName, b.tagName, a.getAttribute('a'), b.getAttribute('a'),
     a.firstElementChild.innerHTML, b.firstElementChild.innerHTML
@@ -139,7 +191,7 @@ function(flow){
     return [{title:'aa'}, {title:'bb'}];
   });
   bs.render('v1');
-  var v0 = document.getElementById('v1').firstElementChild;
+  var v0 = document.getElementById('v1');
   var a = v0.firstElementChild, b = a.nextElementSibling;
   return [a.tagName, b.tagName, a.innerHTML, b.innerHTML
   ].join(':');
@@ -150,7 +202,7 @@ function(flow){
     return [{title:'cc'}, {title:'dd'}, {title:'ee'}, {title:'ff'}];
   });
   bs.render('v1');
-  var v0 = document.getElementById('v1').firstElementChild;
+  var v0 = document.getElementById('v1');
   var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
   return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
   ].join(':');
@@ -161,7 +213,7 @@ function(flow){
     return [{title:'gg'}, {title:'hh'}];
   });
   bs.render('v1');
-  var v0 = document.getElementById('v1').firstElementChild;
+  var v0 = document.getElementById('v1');
   var a = v0.firstElementChild, b = a.nextElementSibling;
   return [a.tagName, b.tagName, a.innerHTML, b.innerHTML
   ].join(':');
@@ -172,7 +224,7 @@ function(flow){
     return [{title:'cc'}, {title:'dd'}, {title:'ee'}, {title:'ff'}];
   });
   bs.render('v1');
-  var v0 = document.getElementById('v1').firstElementChild;
+  var v0 = document.getElementById('v1');
   var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
   return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
   ].join(':');
@@ -183,7 +235,7 @@ function(flow){
     return [{'@tmpl':'t1_1', title:'cc'}, {title:'dd'}, {'@tmpl':'t1_1', title:'ee'}, {title:'ff'}];
   });
   bs.render('v1');
-  var v0 = document.getElementById('v1').firstElementChild;
+  var v0 = document.getElementById('v1');
   var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
   return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
   ].join(':');
@@ -197,7 +249,7 @@ function(flow){
     return {title:vm.title + '*'};
   });
   bs.render('v3');
-  var v0 = document.getElementById('v3').firstElementChild;
+  var v0 = document.getElementById('v3');
   var a = v0.firstElementChild, b = a.nextElementSibling, c = b.nextElementSibling, d = c.nextElementSibling;
   return [a.tagName, b.tagName, c.tagName, d.tagName, a.innerHTML, b.innerHTML, c.innerHTML, d.innerHTML
   ].join(':');
@@ -209,8 +261,8 @@ function(flow){
   });
   bs.render('v2');
   var v0 = document.getElementById('v2');
-  var a = v0.firstElementChild.firstElementChild, b = v0.lastElementChild.firstElementChild;
-  var b0 = v0.querySelector('.bs-tmpl-body').firstElementChild;
+  var a = v0.bsHeaderBegin.nextElementSibling, b = v0.bsFooterBegin.nextElementSibling;
+  var b0 = v0.bsBodyBegin.nextElementSibling;
   var b1 = b0.nextElementSibling, b2 = b1.nextElementSibling, b3 = b2.nextElementSibling;
   return [a.tagName, b.tagName, a.innerHTML, b.innerHTML,
           b0.tagName, b1.tagName, b2.tagName, b3.tagName,

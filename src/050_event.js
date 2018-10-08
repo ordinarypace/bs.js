@@ -6,15 +6,8 @@ let scrollState = 0, n;
   if(!(idx & 1)) n = v; else n2c[n] = v = parseInt(v), c2n[v] = n;
 });
 const posCat = O(null,
-touchstart, 1, 
-touchmove, 2, 
-touchend, 3, 
-mousedown, 4, 
-mousemove, 5, 
-mouseup, 6, 
-click, 6, 
-mouseover, 6, 
-mouseout, 6
+'touchstart', 1, 'touchmove', 2, 'touchend', 3, 'mousedown', 4, 'mousemove', 5, 
+'mouseup', 6, 'click', 6, 'mouseover', 6, 'mouseout', 6
 );
 bs.throttle = (rate, f)=>{
   const delay = ()=>{f.apply(null, a), timeOutId = -1;};
@@ -46,23 +39,26 @@ bs.debounce = (rate, f)=>{
     timeOutId = setTimeout(delay, rate);
   };
 };
+const arg = O();
 bs.on = (uuid, e, el)=>{
-  let ev = el.bsEv, t;
+  let ev = el.bsEv, t, k;
   if(!ev) el.bsEv = ev = O(EV, '_pos', 0, 'vm', VM[uuid], 'target', el);
-  ev.event = e, ev.type = t = e.type;
+  ev.event = e, ev.type = t = e.type, ev.arg = arg[k = t + ":" + uuid] ? VAL(arg[k]) : null;
   if(posCat[t] == 1 || posCat[t] == 4) ev.pos();
   return el.bsEv;
 };
+const absEV = O(null, 
+down, bs.isMobile ? 'touchstart' : 'mousedown',
+move, bs.isMobile ? 'touchmove' : 'mousemove',
+up, bs.isMobile ? 'touchend' : 'mouseup'
+);
 const EV = O(null,
 $add, (el, k, v)=>{
-  let f, t, fk, target, l, lt;
-  switch(k){
-  case'down':k = bs.isMobile ? 'touchstart' : 'mousedown'; break;
-  case'move':k = bs.isMobile ? 'touchmove' : 'mousemove'; break;
-  case'up':k = bs.isMobile ? 'touchend' : 'mouseup';
-  }
+  let f, t, fk, target, l, lt, a;
+  if(a = absEV[k]) k = a;
   if(typeof v[0] == 'string') target = v[0];
   else if(fk = v[0].k){
+    arg[k + ":" + v[1]] = v[0].a || null;
     if(l = v[0].l) lt = v[0].lt || 0;
     
 #trait evadd0
@@ -169,21 +165,23 @@ clientY, method(v){
 bs.systemEvent = (()=>{
   const fs = O();
   return (type, k, f)=>{
-    let v = fs[type];
+    let v = fs[type], t;
     if(f === null){
       if(v) delete v[k];
     }else{
       if(!v){
         v = fs[type] = O();
-        W['on'+type] = ()=>{
-          let k;
-          for(k in v) v[k]();
-        };
+        if(t = 'on' + type in W ? W : 'on' + type in doc ? doc : null){
+          t['on' + type] = ()=>{
+            let k;
+            for(k in v) v[k]();
+          };
+        }
       }
     }
     v[k] = f;
   };
 })();
-bs.systemEvent('scroll', '__', ()=>{if(scrollState++>100000000)scrollState = 0;});
+bs.systemEvent('scroll', '__', ()=>{if(scrollState++>100000000) scrollState = 0;});
 return EV;
 })();

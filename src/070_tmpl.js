@@ -10,6 +10,7 @@ const nthf = v=>{
   const r = O(null, 'p', [], 'd', []);
   if(!v) v = '+all';
   v.split(',').forEach((v)=>{
+    v = v.trim();
     const type = v[0];
     v = v.substr(1);
     r[type == '+' ? 'p' : 'd'].push(nf[v] || (nf[v] = new Function('i,j', 'return ' + v)));
@@ -40,6 +41,14 @@ const add = (el, key, role, nth, d)=>{
     tmpl[tmpl.len++] = O(LIST, 'el', el, 'nth', nth, 'd', d);
   }
 };
+const CLONE = O(LIST,
+render, method(){
+  let i = this.len, k, el;
+  while(i--){
+    k = this[i], el = k.el;
+    if(k = k.vm) k.render(el);
+  }
+});
 const tArr = [];
 const TMPL = O(null,
 $add, add,
@@ -54,7 +63,7 @@ $scan, p=>{
     switch(a[0]){
     case'@':case'.':a = bs(a); break;
     case'{':a = (new Function('', 'return ' + a))(); break;
-    default:a = O();
+    default:a = !a ? O() : a.indexOf(':') != -1 ? (new Function('', 'return {' + a + '}'))() : {k:a};
     }
   #end attr0
   #trait(attr0)
@@ -70,62 +79,54 @@ $render, (el, k)=>{
     else throw 'invalid tmpl:' + k;
   }else TMPL[''].render(el, k.header, k.footer, k.empty);
 },
-init, ()=>{
+init, method(){
   let el, i, j, k, v;
   this.isInited = true;
   i = keys.length;
   while(i--) if(v = this[k = keys[i]]){
-    switch(k){
-    case'header':case'footer':
-      el = EL(k);
-      el.className = 'bs-tmpl-' + k;
-      break;
-    case'empty':
-      el = EL('section');
-      el.className = 'bs-tmpl-empty';
-      break;
-    default: el = null;
-    }
-    v.el = el, j = v.len;
-    while(j--){
-      if(el) el.appendChild(v[j].el.cloneNode(true));
-      else v[j].vm = bs.scan(v[j].el);
-    }
-    if(el) v.vm = bs.scan(el);
+    j = v.len;
+    while(j--) v[j].vm = bs.scan(v[j].el);
   }
 },
-render, (p, H, F, E)=>{
-  const vm = vmData, old = p.bsTmpl || (p.bsTmpl = O());
-  let body, el, i, j, i0, j0, k, v, t, nth, m, tmpl, ti, tj, r, o, oren, render;
+clone, method(p, k){
+  const pk = 'bs' + k[0].toUpperCase() + k.substr(1).toLocaleLowerCase();
+  const begin = p[pk + 'Begin'] = p.appendChild(doc.createComment(k + 'Begin(' + this.k + ')'));
+  const end = p[pk + 'End'] = p.appendChild(doc.createComment(k + 'End(' + this.k + ')'));
+  k = this[k];
+  const r = O(CLONE, 'begin', begin, 'end', end);
+  let i = r.len = k.len, el, vm;
+  while(i--){
+    el = k[i].el.cloneNode(true);
+    r[i] = O(null, 'k', this.k, 'i', i, 'el', el, 'vm', vm = k[i].vm);
+    if(vm) vm.render(el);
+    p.insertBefore(el, end);
+  }
+  return r;
+},
+render, method(p, H, F, E){
+  if(!p.bsTmpl){
+    p.bsTmpl = O();
+    p.innerHTML = '';
+  }
+  const vm = vmData, info = vm.INFO, old = p.bsTmpl;
+  let body, el, i, j, i0, j0, k, v, t, nth, m, tmpl, ti, tj, r, o, idx, cnt, comment, bodyEnd, isEnd;
   if(!this.isInited) this.init();
   if(j = vm.length){
-    #trait tmpl0
-    if(t = old.header) t.style.display = k;
-    if(t = old.body) t.style.display = k;
-    if(t = old.footer) t.style.display = k;
-    if(t = old.empty) t.style.display = v;
-    #end tmpl0
-    k = 'block', v = 'none'; #trait(tmpl0)
     #trait tmpl1
-    t = v ? TMPL[v] : this;
-    if(v = t[k]){
+    if((t = TMPL[v] || this) && t[k]){
       if(!t.isInited) t.init();
-      if(!old[k]) p.appendChild(old[k] = v.el.cloneNode(true));
-      el = old[k];
-      if(t = t.vm) t.render(el);
-      #body
+      if(!old[k]) old[k] = t.clone(p, k);
+      old[k].render();
     }
     #end tmpl1
     k = 'header', v = H;#trait(tmpl1)
-    if(!old.body){
-      old.vm = [];
-      old.render = [];
-      p.appendChild(old.body = body = EL('section'));
-      body.className = 'bs-tmpl-body';
-    }else body = old.body;
-    oren = old.render, o = oren.length, r = 0;
-    for(render = [], i = 0, el = null; i < j; i++){
-      vmData = vm[i], vmData.PARENT = vm;
+    if(!old.body) old.body = O(null, 
+      'begin', p.bsBodyBegin = p.appendChild(doc.createComment('bsBodyBegin(' + this.k + ')')), 
+      'end', p.bsBodyEnd = p.appendChild(doc.createComment('bsBodyEnd(' + this.k + ')'))
+    );
+    bodyEnd = old.body.end;
+    for(i = info ? 1 : 0, cnt = j - i, el = old.body.begin, idx = 0; i < j; i++, idx++){
+      vmData = vm[i], vmData.PARENT = vm.PARENT, vmData.INFO = info, vmData.IDX = idx, vmData.CNT = cnt;
       tmpl = vmData['@tmpl'] || this.k;
       if(typeof tmpl == 'string') tArr[0] = tmpl, tmpl = tArr;
       for(ti = 0, tj = tmpl.length; ti < tj; ti++){
@@ -135,38 +136,35 @@ render, (p, H, F, E)=>{
         for(i0 = 0, j0 = t.len; i0 < j0; i0++){
           k = t[i0], nth = k.nth;
           if(typeof nth[i] == 'boolean' ? nth[i] : isPresent(nth, i, j)){
-            if(r < o){
-              el = el ? el.nextElementSibling : body.firstElementChild;
-              if(old.render[r] != k){
-                body.replaceChild(m = k.pull() || k.el.cloneNode(true), el);
-                old.render[r].push(el);
-                el = m;
+            if(!isEnd){
+              el = el.nextSibling;
+              if(el == bodyEnd){
+                isEnd = true;
+                p.insertBefore(el = k.pull() || k.el.cloneNode(true), bodyEnd);
+              }else{
+                v = el.bsRendered;
+                if(v != k){
+                  v.push(el);
+                  p.replaceChild(m = k.pull() || k.el.cloneNode(true), el);
+                  el = m;
+                }
               }
-            }else body.appendChild(el = k.pull() || k.el.cloneNode(true));
+            }else p.insertBefore(el = k.pull() || k.el.cloneNode(true), bodyEnd);
+            if(!el.bsRendered) el.bsRendered = k;
             if(m = k.vm){
-              if(k.d &&(v = bs(k.d)(vmData, i))) v.PARENT = vm, v.ORIGIN = vmData, vmData = v;
+              if(k.d &&(v = bs(k.d)(vmData, i))) vmData = v, vmData.PARENT = vm.PARENT, vmData.INFO = info, vmData.IDX = idx, vmData.CNT = cnt;
               m.render(el);
             }
-            render[r++] = k;
           }
         }
       }
     }
-    for(; r < o; r++){
-      oren[r].push(m = el.nextElementSibling);
-      body.removeChild(m);
-    }
-    old.vm = vmData = vm;
-    old.render = render;
+    while((el = el.nextSibling) && el != bodyEnd) el.bsRendered.push(el), p.removeChild(el);
     k = 'footer', v = F; #trait(tmpl1)
   }else{
-    k = 'empty', v = E;
-    #trait tmpl1{
-      k = 'none', v = 'block'; #trait(tmpl0)
-      old.body = [];
-    #}
+    k = 'empty', v = E; #trait(tmpl1)
   }
 });
-add('<div></div>', '');
+add('<div data-bs="html:\'.{v}\'"></div>', '', '', '', '.-');
 return TMPL;
 })();

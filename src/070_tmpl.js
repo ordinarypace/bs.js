@@ -17,7 +17,7 @@ const nthf = v=>{
   });
   return r;
 };
-const keys = 'empty,header,footer,body'.split(',');
+const keys = 'header,footer,body'.split(',');
 const isPresent = (nth, i, j)=>{
   let m, n;
   for(m = 0, n = nth.p.length; m < n; m++){
@@ -104,67 +104,64 @@ clone, method(p, k){
   return r;
 },
 render, method(p, H, F, E){
-  if(!p.bsTmpl){
+  if(!p.bsTmpl || (p.bsBodyBegin && p.bsBodyBegin.parentNode != p)){
     p.bsTmpl = O();
     p.innerHTML = '';
   }
   const vm = vmData, info = vm.INFO, old = p.bsTmpl;
   let body, el, i, j, i0, j0, k, v, t, nth, m, tmpl, ti, tj, r, o, idx, cnt, comment, bodyEnd, isEnd;
   if(!this.isInited) this.init();
-  if(j = vm.length){
-    #trait tmpl1
-    if((t = TMPL[v] || this) && t[k]){
+  j = vm.length;
+  #trait tmpl1
+  if((t = TMPL[v] || this) && t[k]){
+    if(!t.isInited) t.init();
+    if(!old[k]) old[k] = t.clone(p, k);
+    old[k].render();
+  }
+  #end tmpl1
+  k = 'header', v = H;#trait(tmpl1)
+  if(!old.body) old.body = O(null, 
+    'begin', p.bsBodyBegin = p.appendChild(doc.createComment('bsBodyBegin(' + this.k + ')')), 
+    'end', p.bsBodyEnd = p.appendChild(doc.createComment('bsBodyEnd(' + this.k + ')'))
+  );
+  bodyEnd = old.body.end;
+  for(i = info ? 1 : 0, cnt = j - i, el = old.body.begin, idx = 0; i < j; i++, idx++){
+    vmData = vm[i], vmData.PARENT = vm.PARENT, vmData.INFO = info, vmData.IDX = idx, vmData.CNT = cnt;
+    tmpl = vmData['@tmpl'] || this.k;
+    if(typeof tmpl == 'string') tArr[0] = tmpl, tmpl = tArr;
+    for(ti = 0, tj = tmpl.length; ti < tj; ti++){
+      t = TMPL[tmpl[ti]];
       if(!t.isInited) t.init();
-      if(!old[k]) old[k] = t.clone(p, k);
-      old[k].render();
-    }
-    #end tmpl1
-    k = 'header', v = H;#trait(tmpl1)
-    if(!old.body) old.body = O(null, 
-      'begin', p.bsBodyBegin = p.appendChild(doc.createComment('bsBodyBegin(' + this.k + ')')), 
-      'end', p.bsBodyEnd = p.appendChild(doc.createComment('bsBodyEnd(' + this.k + ')'))
-    );
-    bodyEnd = old.body.end;
-    for(i = info ? 1 : 0, cnt = j - i, el = old.body.begin, idx = 0; i < j; i++, idx++){
-      vmData = vm[i], vmData.PARENT = vm.PARENT, vmData.INFO = info, vmData.IDX = idx, vmData.CNT = cnt;
-      tmpl = vmData['@tmpl'] || this.k;
-      if(typeof tmpl == 'string') tArr[0] = tmpl, tmpl = tArr;
-      for(ti = 0, tj = tmpl.length; ti < tj; ti++){
-        t = TMPL[tmpl[ti]];
-        if(!t.isInited) t.init();
-        t = t.body;
-        for(i0 = 0, j0 = t.len; i0 < j0; i0++){
-          k = t[i0], nth = k.nth;
-          if(typeof nth[i] == 'boolean' ? nth[i] : isPresent(nth, i, j)){
-            if(!isEnd){
-              el = el.nextSibling;
-              if(el == bodyEnd){
-                isEnd = true;
-                p.insertBefore(el = k.pull() || k.el.cloneNode(true), bodyEnd);
-              }else{
-                v = el.bsRendered;
-                if(v != k){
-                  v.push(el);
-                  p.replaceChild(m = k.pull() || k.el.cloneNode(true), el);
-                  el = m;
-                }
+      t = t.body;
+      for(i0 = 0, j0 = t.len; i0 < j0; i0++){
+        k = t[i0], nth = k.nth;
+        if(typeof nth[i] == 'boolean' ? nth[i] : isPresent(nth, i, j)){
+          if(!isEnd){
+            el = el.nextSibling;
+            if(el == bodyEnd){
+              isEnd = true;
+              p.insertBefore(el = k.pull() || k.el.cloneNode(true), bodyEnd);
+            }else{
+              v = el.bsRendered;
+              if(v != k){
+                v.push(el);
+                p.replaceChild(m = k.pull() || k.el.cloneNode(true), el);
+                el = m;
               }
-            }else p.insertBefore(el = k.pull() || k.el.cloneNode(true), bodyEnd);
-            if(!el.bsRendered) el.bsRendered = k;
-            if(m = k.vm){
-              if(k.d &&(v = bs(k.d)(vmData, i))) vmData = v, vmData.PARENT = vm.PARENT, vmData.INFO = info, vmData.IDX = idx, vmData.CNT = cnt;
-              m.render(el);
             }
+          }else p.insertBefore(el = k.pull() || k.el.cloneNode(true), bodyEnd);
+          if(!el.bsRendered) el.bsRendered = k;
+          if(m = k.vm){
+            if(k.d &&(v = bs(k.d)(vmData, i))) vmData = v, vmData.PARENT = vm.PARENT, vmData.INFO = info, vmData.IDX = idx, vmData.CNT = cnt;
+            m.render(el);
           }
         }
       }
     }
-    while((el = el.nextSibling) && el != bodyEnd) el.bsRendered.push(el), p.removeChild(el);
-    k = 'footer', v = F; #trait(tmpl1)
-  }else{
-    k = 'empty', v = E; #trait(tmpl1)
   }
+  while((el = el.nextSibling) && el != bodyEnd) el.bsRendered.push(el), p.removeChild(el);
+  k = 'footer', v = F; #trait(tmpl1)
 });
-add('<div data-bs="html:\'.{v}\'"></div>', '', '', '', '.-');
+add('<div data-bs="html:\'.{v}\'"></div>', '', '', '', '');
 return TMPL;
 })();

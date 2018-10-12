@@ -40,25 +40,62 @@ bs.debounce = (rate, f)=>{
   };
 };
 const arg = O();
-bs.on = (uuid, e, el)=>{
+bs.on = (uuid, e, el, isPrevent)=>{
   let ev = el.bsEv, t, k;
   if(!ev) el.bsEv = ev = O(EV, '_pos', 0, 'vm', VM[uuid], 'target', el);
   ev.event = e, ev.type = t = e.type, ev.arg = arg[k = t + ":" + uuid] ? VAL(arg[k]) : null;
   if(posCat[t] == 1 || posCat[t] == 4) ev.pos();
+  if(isPrevent) ev.prevent();
   return el.bsEv;
 };
 const absEV = O(null, 
 down, bs.isMobile ? 'touchstart' : 'mousedown',
 move, bs.isMobile ? 'touchmove' : 'mousemove',
-up, bs.isMobile ? 'touchend' : 'mouseup'
+up, bs.isMobile ? 'touchend' : 'mouseup',
+c, 'click', 
+d, 'down',
+m, 'move',
+u, 'up',
+ku, 'keyup',
+kd, 'keydown',    
+ds, 'dragstart',
+dr, 'drop',
+de, 'dragenter',
+dl, 'dragleave',
+do, 'dragover'
 );
 const EV = O(null,
 $add, (el, k, v)=>{
-  let f, t, fk, target, l, lt, a;
-  if(a = absEV[k]) k = a;
+  let f, t, fk, target, l, lt, a, i, isPrevent = false;
+  switch(k){
+  case'drops':
+    EV.$add(el, '-drop', v);
+    EV.$add(el, '-dragenter', v);
+    EV.$add(el, '-dragleave', v);
+    EV.$add(el, '-dragover', v);
+    return;
+  case'event':case'ev':
+    a = v[0].split(','), i = a.length;
+    while(i--){
+      a[i] = a[i].split(':');
+      EV.$add(el, a[i][0].trim(), [a[i][1].trim(), v[1]]);
+    }
+    return;
+  }
+  if(k[0] == '-'){
+    isPrevent = true;
+    k = k.substr(1);
+  }
+  
+  while(a = absEV[k]) k = a;
+  if(k == 'dragstart') el.draggable = true;
+  if(!('on' + k in doc.body)) return;
+  
   if(typeof v[0] == 'string') target = v[0];
   else if(fk = v[0].k){
-    arg[k + ":" + v[1]] = v[0].a || null;
+    if(arg[k + ":" + v[1]] = a = (v[0].a && v[0].a.slice(0)) || null){
+      if(i = a.length) while(i--) if(typeof a[i] == 'string' && a[i].substr(0, 2) == '.{') a[i] = bs(a[i]);
+    }
     if(l = v[0].l) lt = v[0].lt || 0;
     
 #trait evadd0
@@ -80,7 +117,7 @@ $add, (el, k, v)=>{
       #trait evadd0{ bs.lock(l, f, lt); #}
     }else target = fk;
   }else throw 'invalid event:' + console.log(v);
-  el.setAttribute('on' + k, "bs('" + target + "')(bs.on('" + v[1] + "', event, this))");
+  el.setAttribute('on' + k, "bs('" + target + "')(bs.on('" + v[1] + "', event, this, " + isPrevent + "))");
 },
 wheelDelta, method(){
   const e = this.event, n = 225, n1 = n - 1, w = e['wheelDelta'] ? e.wheelDelta : -e.deltaY * 20;
@@ -100,9 +137,26 @@ key, method(k){
   default:return e.keyCode == n2c[k];
   }
 },
+dropEffect, method(type){if(this.event.dataTransfer) this.event.dataTransfer.dropEffect = type;},
+prevent, method(){this.event.preventDefault();},
+value, method(){
+  if(arguments.length) this.target.value = arguments[0];
+  else return this.target.value.trim();
+},
+data, method(){
+  const v = this.target.bsData;
+  return !v ? null : arguments.length ? v[arguments[0]] : v;
+},
+prop, method(target, k){
+  if(target = bs.vm(target).el) switch(k[0]){
+  case'@':return target.getAttribute(k.substr(1));
+  case'*':return this.target.bsData && (k == '*' ? this.target.bsData : this.target.bsData[k.substr(1)]);
+  default:return target[k];
+  }
+},
 pos, (()=>{
-  const docel = doc.documentElement;
-  const POS = O(null,
+const docel = doc.documentElement;
+const POS = O(null,
 clientX, method(v){
   const ev = this.length ? this.touches[v || 0] : this.event;
   return ev.clientX - ev.target.getBoundingClientRect().left - (W.pageXOffset || docel.scrollLeft || 0);

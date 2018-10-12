@@ -19,6 +19,36 @@ bs.isMobile = ((a)=>{
     return r.substr(1);  
   };
 }();
+bs.el = function(t){
+  const a = arguments;
+  let i, j, k, v;
+  t = doc.createElement(t);
+  i = 1, j = a.length;
+  while(i < j){
+    k = a[i++], v = a[i++];
+    if(k[0] == '@') t[k.substr(1)] = v;
+    else t.style[k] = v;
+  }
+  return t;
+};
+bs.p = function(t){
+  const a = arguments;
+  let i, j, k, v;
+  for(i = 1, j = a.length; i < j; i++){
+    v = a[i];
+    if(typeof v == 'string' && v.substr(0, 4) == 'CSS{'){
+      v = v.substring(4, v.length - 1).split(';');
+      i = v.length;
+      while(i--){
+        k = v.split(':');
+        t[k[0].trim()] = k[1].trim();
+      }
+    }else{
+      for(k in v) if(own.call(v, k)) t[k] = v[k];
+    }
+  }
+  return t;
+};
 !()=>{
 	const encode = encodeURIComponent, decode = decodeURIComponent, mk = target=>{
 		const cache = {};

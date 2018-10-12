@@ -14,8 +14,8 @@ const O = Object.freeze( p=>{
 const LIST = O(null, 
 len, 0, 
 plen, 0,
-pull, ()=>{return this.plen ? this[--this.plen] : 0;},
-push, v=>{this[this.plen++] = v;}
+pull, method(){return this.plen ? this[--this.plen] : 0;},
+push, method(v){this[this.plen++] = v;}
 );
 const LAZY = Object.freeze(O());
 let vmData;
@@ -30,7 +30,15 @@ const app = O(), bs =(()=>{
     while(i < j){
       t = app, k = a[i++];
       if(!k) return null;
-      if(k == '.') return vmData;
+      switch(k){
+      case'.{SELF}': return vmData;
+      default: 
+        if(k.indexOf('...') > -1){
+          k = k.split('...'), v = [];
+          for(m = parseInt(k[0].trim(), 10), n = parseInt(k[1].trim(), 10); m <= n; m++) v.push({v:m});
+          return v;
+        }
+      }
       if(k.indexOf('#{') == 0){
         k = k.substring(2, k.length - 1).replace(ex0, "bs('$&')");
         if(!isT) k = k.replace(ex2, "'");
@@ -47,6 +55,7 @@ const app = O(), bs =(()=>{
         k = k[n];
       }
       if(i == j){
+        if(!t) return null;
         v = t[k];
         if(typeof v == 'string' && ex1.test(v)) v = bs(v);
         else if(v && v.is == LAZY) v = v.f();
@@ -71,18 +80,28 @@ bs.lazy = f=>O(LAZY, 'f', f);
 }();
 const own = Object.prototype.hasOwnProperty;
 const VAL = v=>{
-  const st = O(LIST), r = O();
-  st[st.len++] = {c:r, k:0, v:v};
-  let c, i, t;
+  const st = VAL.st;
+  let n, c, i, t;
+  st.len = 0;
+  st[st.len++] = n = O();
+  n.c = VAL, n.k = 0, n.v = v;
   while(c = st[--st.len]){
-    if(!c.v || typeof c.v != 'object') c.c[c.k] = typeof v == 'string' && v[1] == '{' ? bs(c.v) : c.v;
-    else if(c.v instanceof Array){
+    if(!c.v || typeof c.v != 'object'){ 
+      c.c[c.k] = typeof c.v == 'string' && c.v[1] == '{' ? bs(c.v) : c.v;
+    }else if(c.v instanceof Array){
       c.c[c.k] = t = [], i = c.v.length;
-      while(i--) st[st.len++] = {c:t, k:i, v:c.v[i]};
+      while(i--){
+        st[st.len++] = n = O();
+        n.c = t, n.k = i, n.v = c.v[i];
+      }
     }else{
       c.c[c.k] = t = O();
-      for(i in c.v) if(own.call(v, i)) st[st.len++] = {c:t, k:i, v:c.v[i]};
+      for(i in c.v) if(own.call(v, i)){
+        st[st.len++] = n = O();
+        n.c = t, n.k = i, n.v = c.v[i];
+      }
     }
   }
-  return r[0];
+  return VAL[0];
 };
+VAL.st = O(LIST);
